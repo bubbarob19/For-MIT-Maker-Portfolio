@@ -10,6 +10,11 @@ Skripts are how I used to code my old servers before I got into Java! I placed m
 ## Java
 
 I have some snippets of old (and some new) code that you can view.
+Also, note! You may see some things considered "bad practice" in typical software engineering. There are a couple reasons for this:
+- Some of the code is a couple years old (I was very bad at first)
+- The Minecraft Server APIs I use do not natively support things like dependency injection. You can add it with external libraries like Guice, but is truly a pain and for most small Minecraft plugins, not worth it.
+- Velocity is almost always prioritized over clean code for server development
+  - Quick story: at one point, I spent a whole lot of time trying to make multiple microservices for one of my servers. It was a great learning experience, but extremely unnecessary for the project I was working on - connecting to the MongoDB driver itself is way easier. 
 
 ## Helpful Links for context:
 
