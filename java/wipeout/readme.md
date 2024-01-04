@@ -1,0 +1,1 @@
+This is a little bit of code from the Wipeout game mode I mentioned in the video. I submitted this game mode to the Minehut Hackathon, and the server won in the category "Best Server Network." This was my first fully completed Java project, and I was really proud of the outcome.
