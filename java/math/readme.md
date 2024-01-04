@@ -1,0 +1,1 @@
+Here is a little bit of code from the custom calculus questions I mentioned in the video! Every 15 minutes, a new random math question is generated and sent to chat. The first player who answers it wins either $500 dollars or 15 experience.
