@@ -12,9 +12,9 @@ Skripts are how I used to code my old servers before I got into Java! I placed m
 I have some snippets of old (and some new) code that you can view.
 Also, note! You may see some things considered "bad practice" in typical software engineering. There are a couple reasons for this:
 - Some of the code is a couple years old (I was very bad at first)
-- The Minecraft Server APIs I use do not natively support things like dependency injection. You can add it with external libraries like Guice, but is truly a pain and for most small Minecraft plugins, not worth it.
+- The Minecraft Server APIs I use do not natively support things like dependency injection. You can add it with external libraries like Guice, but it is truly a pain, and not worth it for most Minecraft plugins. Static singletons may be ugly, but they sure do save time!
 - Velocity is almost always prioritized over clean code for server development
-  - Quick story: at one point, I spent a whole lot of time trying to make multiple microservices for one of my servers. It was a great learning experience, but extremely unnecessary for the project I was working on - connecting to the MongoDB driver itself is way easier. 
+  - Quick story: at one point, I spent a whole lot of time trying to make multiple microservices for one of my servers. It was a great learning experience, but extremely unnecessary for the project I was working on - connecting to the MongoDB driver itself is way easier. I ended up scrapping the microservices at the end anyways since it was too clunky and annoying to manage. 
 
 ## Helpful Links for context:
 
@@ -22,6 +22,6 @@ If you want to know more about what exactly a Minecraft Server is or what my ser
 
 - https://www.youtube.com/watch?v=OuLtjYn8N-0
  
-Along with this, here is a clip of Minehut trying out my submission for the Minehut Hackathon. The link should send you to the correct timestamp, but if it doesn't, the clip starts 35 minutes and 9 seconds into the video. Buick (the other owner of this server) and I created a fun obstacle course game mode based on the TV show Wipeout. At the beginning, you will even hear a custom Wipeout theme song I created using NoteBlockStudio!
+Along with this, here is a clip of Minehut trying out my submission for the Minehut Hackathon. The link should send you to the correct timestamp, but if it doesn't, the clip starts 35 minutes and 9 seconds into the video. Buick (the other owner of this server) and I created a fun obstacle course game mode based on the TV show Wipeout. At the beginning, you will even hear a custom Wipeout theme song I created using [NoteBlockAPI](https://github.com/koca2000/NoteBlockAPI)!
 
 - https://www.youtube.com/watch?v=O2N1xzvC5pM&t=2109s
