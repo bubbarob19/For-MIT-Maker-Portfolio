@@ -1,0 +1,325 @@
+d#BubPVP Battle Pass
+
+#battlepass.sk
+
+#QUEST LIST
+#1. Mine 50 Stone
+#2. Upgrade to Pickaxe V
+#3. Get 30 kills
+#4. Help slay the Gasper Boss
+#5. Upgrade to a full set of Armor V
+#6. Open any crate
+#7. Mine 100 Blocks of iron
+#8. Upgrade to a full set of Armor VIII
+#9. Win $500 in from gambling
+#10. Upgrade to Sword XX
+#11. Create a clan and get at least 3 members in it
+#12. Get the final hit on the Gasper Boss
+#13. Upgrade to Sword XXV
+#14. Obtain 750 Gold Ingots
+#15. Upgrade to Pickaxe XXX
+#16. Open 2 Epik Crates
+#17. Get a total of 500 kills
+#18. Win a coinflip or clicker battle for $1000 or more
+#19. Obtain a total balance of $20000 or higher
+#20. Upgrade to Pickaxe XL
+#21. Earn a killstreak of 50 or higher
+#22. Upgrade to a full set of armor XXIII
+#23. Mine 1000 Obsidian or Crying Obsidian
+#24. Upgrade to Sword L
+#25. Get to Level 50
+
+#QUEST REWARD LIST
+#1. 100 dollars
+#2. 64 cobblestone
+#3. 5 Golden Apples
+#4. 250 dollars
+#5. 2 compressed coal
+#6. Common Crate Key
+#7. 2 compressed iron
+#8. Rare Crate Key
+#9. 500 dollars
+#10. 10 Souls of BubPVP
+#11. 64 Lapis Lazuli
+#12. 500 dollars
+#13. 3 common crate keys
+#14. 4 compressed gold ingots
+#15. 1 epik crate key
+#16. 1000 dollars
+#17. 25 souls of BubPVP
+#18. 5 compressed diamonds
+#19. 2500 dollars
+#20. 4 compressed netherite ingots
+#21. 3 Epik Crates
+#22. 6 compressed obsidian
+#23. 3 Epik Crates
+#24. 50 Souls of BubPVP
+#25. Fire Rod of Doom
+
+command /battlepass:
+	trigger:
+		play sound "entity.chicken.egg" to player
+		battlepass(player, 1)
+
+function battlepass(p: player, n: number):
+	set {_u} to uuid of {_p}
+	open virtual chest inventory with size 5 named "&3&lBubPVP &8Battle Pass" to {_p}
+	format gui slot (integers between 0 and 44) of {_p} with light gray stained glass pane named "&1"
+	format gui slot (integers between 0 and 35) of {_p} with black stained glass pane named "&1"
+	format gui slot (integers between 36 and 44) of {_p} with black stained glass pane named "&1"
+	if {_n} is 1:
+		format gui slot 38 of {_p} with red concrete named "&1"
+	else:
+		format gui slot 38 of {_p} with arrow named "&3Scroll Left" to run:
+			battlepass({_p}, ({_n} - 1))
+	if {_n} is 17:
+		format gui slot 42 of {_p} with red concrete named "&1"
+	else:
+		format gui slot 42 of {_p} with arrow named "&3Scroll Right" to run:
+			battlepass({_p}, ({_n} + 1))
+	format gui slot 40 of {_p} with lime concrete named "&a&lSUBMIT QUEST" with lore "", "&7(Click here to submit your", "&7current tier / quest)", "", "&7Auto Submit Quests with" and "&6&lLEGEND &7rank or higher!" to run:
+		detectTier({_p}, {_n})
+	loop 25 times:
+		set {_t::%loop-number%} to {tier::%loop-number%::incomplete}
+	if {bpdetect::1::%{_u}%} is not set:
+		set {bpdetect::1::%{_u}%} to 0
+	set line 4 of {_t::1}'s lore to "&f&lPROGRESS: &c%{bpdetect::1::%{_u}%}%&c/50"
+	if {battlepass::%{_u}%} is greater than or equal to 2:
+		set {_kill::3} to {kills::%{_u}%}
+		if {_kill::3} is greater than 30:
+			set {_kill::3} to 30
+		set line 4 of {_t::3}'s lore to "&f&lPROGRESS: &c%{_kill::3}%&c/30"
+	else:
+		set line 4 of {_t::3}'s lore to "&f&lPROGRESS: &c0&c/30"
+	if {bpdetect::6::%{_u}%} is not set:
+		set {bpdetect::6::%{_u}%} to 0
+	set line 4 of {_t::6}'s lore to "&f&lPROGRESS: &c%{bpdetect::6::%{_u}%}%&c/1"
+	if {bpdetect::7::%{_u}%} is not set:
+		set {bpdetect::7::%{_u}%} to 0
+	set line 5 of {_t::7}'s lore to "&f&lPROGRESS: &c%{bpdetect::7::%{_u}%}%&c/100"
+	if {bpdetect::9::%{_u}%} is not set:
+		set {bpdetect::9::%{_u}%} to 0
+	set line 4 of {_t::9}'s lore to "&f&lPROGRESS: &c%{bpdetect::9::%{_u}%}%&c/500"
+	if {bpdetect::12::%{_u}%} is not set:
+		set {bpdetect::12::%{_u}%} to 0
+	set line 4 of {_t::12}'s lore to "&f&lPROGRESS: &c%{bpdetect::12::%{_u}%}%&c/1"
+	if {battlepass::%{_u}%} is greater than or equal to 13:
+		set {_gold} to amount of gold ingots in {_p}'s inventory
+		if {_gold} is greater than 750:
+			set {_gold} to 750
+		if {_gold} is not set:
+			set {_gold} to 0
+		set line 4 of {_t::14}'s lore to "&f&lPROGRESS: &c%{_gold}%&c/750"
+	else:
+		set line 4 of {_t::14}'s lore to "&f&lPROGRESS: &c0&c/750"
+	if {bpdetect::16::%{_u}%} is not set:
+		set {bpdetect::16::%{_u}%} to 0
+	set line 4 of {_t::16}'s lore to "&f&lPROGRESS: &c%{bpdetect::16::%{_u}%}%&c/2"
+	if {battlepass::%{_u}%} is greater than or equal to 16:
+		set {_kill::17} to {kills::%{_u}%}
+		if {_kill::17} is greater than 500:
+			set {_kill::17} to 500
+		set line 4 of {_t::17}'s lore to "&f&lPROGRESS: &c%{_kill::17}%&c/500"
+	else:
+		set line 4 of {_t::17}'s lore to "&f&lPROGRESS: &c0&c/500"
+	if {battlepass::%{_u}%} is greater than or equal to 18:
+		set {_bal} to {balance::%{_u}%}
+		if {_bal} is greater than 20000:
+			set {_bal} to 20000
+		set line 5 of {_t::19}'s lore to "&f&lPROGRESS: &c%{_bal}%&c/20000"
+	else:
+		set line 5 of {_t::19}'s lore to "&f&lPROGRESS: &c0&c/20000"
+	if {battlepass::%{_u}%} is greater than or equal to 20:
+		set {_ks} to {killstreak::%{_u}%}
+		if {_ks} is greater than 50:
+			set {_ks} to 50
+		set line 4 of {_t::21}'s lore to "&f&lPROGRESS: &c%{_ks}%&c/50"
+	else:
+		set line 4 of {_t::21}'s lore to "&f&lPROGRESS: &c0&c/50"
+	if {bpdetect::23::%{_u}%} is not set:
+		set {bpdetect::23::%{_u}%} to 0
+	set line 4 of {_t::23}'s lore to "&f&lPROGRESS: &c%{bpdetect::23::%{_u}%}%&c/1000"
+	if {battlepass::%{_u}%} is greater than or equal to 20:
+		set {_lvl} to {_p}'s level
+		if {_lvl} is greater than 40:
+			set {_lvl} to 40
+		set line 4 of {_t::25}'s lore to "&f&lPROGRESS: &c%{_lvl}%&c/40"
+	else:
+		set line 4 of {_t::25}'s lore to "&f&lPROGRESS: &c0&c/40"
+	loop 9 times:
+		delete {_testvar}
+		set {_num} to 0
+		delete {_ln1}
+		set {_ln1} to loop-number - 1 + {_n}
+		set {_i} to {tier::%{_ln1}%::reward}
+		while {_testvar} is not set:
+			add 1 to {_num}
+			if line {_num} of {_i}'s lore is not set:
+				set {_testvar} to true
+		set line {_num} of {_i}'s lore to "&7"
+		if {battlepass::%{_u}%} is greater than or equal to {_ln1}:
+			format gui slot (loop-number + 8) of {_p} with {tier::%{_ln1}%::complete}
+			if {reward::%{_u}%::*} contains (loop-number + {_n} - 1):
+				set line ({_num} + 1) of {_i}'s lore to "&c&lALREADY CLAIMED"
+				format gui slot (17 + loop-number) of {_p} with {_i}
+			else:
+				set line ({_num} + 1) of {_i}'s lore to "&a&lCLICK TO CLAIM"
+				format gui slot (17 + loop-number) of {_p} with {_i} to run:
+					set {_am} to (clicked slot - 18 + {_n})
+					set {_c} to {tier::%{_am}%::reward}
+					if {_p} can hold (item amount of {_c}) of {_c}:
+						give {_p} (item amount of {_c}) of {_c}
+						play sound "entity.arrow.hit_player" at pitch 1.4 to {_p}
+						send "&3&lBubPVP: &fYou successfully claimed a battle pass reward!"
+						add {_am} to {reward::%{_u}%::*}
+						battlepass({_p}, {_n})
+					else:
+						play sound "entity.villager.no" to {_p}
+						send "&4ERROR: &cYou do not have enough inventory space to claim this reward!"
+		else:
+			format gui slot (loop-number + 8) of {_p} with {_t::%{_ln1}%}
+			set line ({_num} + 1) of {_i}'s lore to "&7&lNOT CLAIMABLE"
+			format gui slot (loop-number + 17) of {_p} with {_i}
+
+command /sbpr <text> <integer>:
+	permission: op
+	permission message: &cYou are not permitted to perform this command!
+	trigger:
+		if arg-1 is "complete" or "incomplete" or "reward":
+			if arg-2 is between 1 and 25:
+				if player's held item is not air:
+					set {tier::%arg-2%::%arg-1%} to player's held item
+					send "&3&lBubPVP: &fYou successfully set &a&lTIER &7%arg-1% &c%arg-2% &fto your held item!" to player
+				else:
+					send "&4ERROR: &cAir is not a valid item!" to player
+			else:
+				send "&4ERROR: &cTiers range between 1 and 25!" to player
+		else:
+			send "&4ERROR: &cInvalid Argument!"
+
+function tierUp(p: player, n: number):
+	set {_u} to uuid of {_p}
+	add 1 to {battlepass::%{_u}%}
+	if name of {_p}'s current inventory contains "&8Battle Pass":
+		if {_n} is 0:
+			set {_name} to name of (slot 9 of {_p}'s current inventory)
+			replace all "&f&lTIER " in {_name} with ""
+			set {_n} to {_name} parsed as a number
+		battlepass({_p}, {_n})
+	else:
+		send title "&f&lTIER UP!" with subtitle "&7[ &3%{battlepass::%{_u}%} - 1% &7--> &3%{battlepass::%{_u}%}% &7]" to {_p} for 5 seconds
+	send "%nl%&f&lTIER UP: &7You are now &a&lTIER %{battlepass::%{_u}%}%&a&l! &fClaim your reward in the battlepass! &c(/battlepass)%nl%" to {_p}
+	play sound "entity.player.levelup" at pitch .8 to {_p}
+
+every 3 seconds:
+	loop all players:
+		if loop-player has permission "battlepass.auto":
+			if {autoclaimtier::%loop-player's uuid%} is not set:
+				detectTier(loop-player, 0)
+
+function detectTier(p: player, n: number):
+	set {_u} to uuid of {_p}
+	loop {_p}'s inventory:
+		add loop-value to {_inv::*}
+	if {battlepass::%{_u}%} is 0:
+		if {bpdetect::1::%{_u}%} is 50:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 1:
+		loop {_p}'s inventory:
+			if loop-value is a pickaxe:
+				if name of loop-value does not contain "&8[&7I&8]" or "&8[&7II&8]" or "&8[&7III&8]" or "&8[&7IV&8]":
+					tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 2:
+		if {kills::%{_u}%} is greater than or equal to 30:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 3:
+		if {bpdetect::4::%{_u}%} is true:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 4:
+		if {_inv::*} contains a netherite helmet or a diamond helmet or a iron helmet or a chain helmet or {rpgitem::helmet5}:
+			if {_inv::*} contains a netherite chestplate or a diamond chestplate or a iron chestplate or a chain chestplate or {rpgitem::chestplate5}:
+				if {_inv::*} contains a netherite leggings or a diamond leggings or a iron leggings or a chain leggings or {rpgitem::legging5}:
+					if {_inv::*} contains a netherite boots or a diamond boots or a iron boots or a chain boots or {rpgitem::boot5}:
+						tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 5:
+		if {bpdetect::6::%{_u}%} is true:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 6:
+		if {bpdetect::7::%{_u}%} is 100:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 7:
+		if {_inv::*} contains a netherite helmet or a diamond helmet or a iron helmet or {rpgitem::helmet8} or {rpgitem::helmet9} or {rpgitem::helmet10}:
+			if {_inv::*} contains a netherite chestplate or a diamond chestplate or a iron chestplate or {rpgitem::chestplate8} or {rpgitem::chestplate9} or {rpgitem::chestplate10}:
+				if {_inv::*} contains a netherite leggings or a diamond leggings or a iron leggings or {rpgitem::legging8} or {rpgitem::legging9} or {rpgitem::legging10}:
+					if {_inv::*} contains a netherite boots or a diamond boots or a iron boots or {rpgitem::boot8} or {rpgitem::boot9} or {rpgitem::boot10}:
+						tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 8:
+		if {bpdetect::9::%{_u}%} is 500:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 9:
+		if {_inv::*} contains a iron sword or a diamond sword or a netherite sword or {rpgitem::sword20}:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 10:
+		if {playerclan::%{_u}%} is set:
+			if size of {clan::%{playerclan::%{_u}%}%::players::*} is greater than or equal to 3:
+				tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 11:
+		if {bpdetect::12::%{_u}%} is true:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 12:
+		if {_inv::*} contains a diamond sword or a netherite sword or {rpgitem::sword25} or {rpgitem::sword26} or {rpgitem::sword27} or {rpgitem::sword28} or {rpgitem::sword29} or {rpgitem::sword30}:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 13:
+		if {_inv::*} contains 750 gold ingots:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 14:
+		if {_inv::*} contains a diamond pickaxe or a netherite pickaxe or {rpgitem::pick30}:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 15:
+		if {bpdetect::16::%{_u}%} is 2:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 16:
+		if {kills::%{_u}%} is greater than or equal to 500:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 17:
+		if {bpdetect::18::%{_u}%} is true:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 18:
+		if {balance::%{_u}%} is greater than or equal to 20000:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 19:
+		if {_inv::*} contains a netherite pickaxe or {rpgitem::pick40}:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 20:
+		if {killstreak::%{_u}%} is greater than or equal to 50:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 21:
+		if {_inv::*} contains {rpgitem::helmet23} or {rpgitem::helmet24} or {rpgitem::helmet25}:
+			if {_inv::*} contains {rpgitem::chestplate23} or {rpgitem::chestplate24} or {rpgitem::chestplate25}:
+				if {_inv::*} contains {rpgitem::legging23} or {rpgitem::legging24} or {rpgitem::legging25}:
+					if {_inv::*} contains {rpgitem::boot23} or {rpgitem::boot24} or {rpgitem::boot25}:
+						tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 22:
+		if {bpdetect::23::%{_u}%} is 1000:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 23:
+		if {_inv::*} contains 1 of {rpgitem::sword50}:
+			tierUp({_p}, {_n})
+	else if {battlepass::%{_u}%} is 24:
+		if {_p}'s level is greater than or equal to 40:
+			add 1 to {battlepass::%{_u}%}
+			if name of {_p}'s current inventory contains "&8Battle Pass":
+				if {_n} is 0:
+					set {_name} to name of (slot 9 of {_p}'s current inventory)
+					replace all "&f&lTIER " in {_name} with ""
+					set {_n} to {_name} parsed as a number
+				battlepass({_p}, {_n})
+			else:
+				send title "&6&lBATTLE PASS COMPLETE!" with subtitle "&7Great Job! You beat the battle pass!" to {_p} for 5 seconds
+			broadcast ""
+			broadcast "&6&lBATTLE PASS COMPLETE: &f%{_p}% &7completed the battle pass!"
+			broadcast ""
+			loop all players:
+				play sound "entity.player.levelup" at pitch .8 to loop-player
+	else:
+		stop

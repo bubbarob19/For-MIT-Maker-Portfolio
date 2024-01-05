@@ -1,0 +1,716 @@
+on npc right click:
+	if name of citizen event-number is "&3Pickaxe Forger":
+		pickaxeforger(player)
+	else if name of citizen event-number is "&3Sword Forger":
+		swordforger(player)
+	else if name of citizen event-number is "&3Armorsmith":
+		armorsmith(player)
+	else if name of citizen event-number is "&3Rock Collector":
+		sellmaterial(player)
+	else if name of citizen event-number is "&3Medic":
+		medic(player)
+	else if name of citizen event-number is "&3Crate Master":
+		crate(player)
+	else if name of citizen event-number is "&3Welcome Guide":
+		welcomeGuide(player)
+	else if name of citizen event-number is "&3Compressor":
+		compressor(player)
+	else if name of citizen event-number is "&3Soul Seeker":
+		soulSeeker(player)
+	else if name of citizen event-number is "&3Auction Master":
+		auctionHouse(player, 1)
+	else if name of citizen event-number is "&3Treasure Hunter":
+		play sound "entity.chicken.egg" to player
+		battlepass(player, 1)
+	else if name of citizen event-number is "&3Gambler":
+		play sound "entity.chicken.egg" to player
+		open virtual chest inventory with size 3 named "&3&lGAMBLE YO MONEY" to player
+		format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, and 26 of player with light gray stained glass pane named "&1"
+		format gui slot 10 of player with emerald named "&3Coinflip" to run:
+			coinflip(player)
+		format gui slot 13 of player with white concrete named "&3Clicker" to run:
+			clicker(player)
+		format gui slot 16 of player with barrier named "&4&lCOMING SOON"
+
+function soulSeeker(p: player):
+	play sound "entity.chicken.egg" to {_p}
+	open virtual chest inventory with size 3 named "&3Soul Seeker" to {_p}
+	format gui slot (all integers between 0 and 26) of {_p} with black stained glass pane named "&o"
+	format gui slot (all integers between 10 and 16) of {_p} with light gray stained glass pane named "&o"	
+	format gui slot 10 of {_p} with 3 feather named "&3Jump Ability" with lore " ", "&a&lCOST:" and "&8¬ &f1 Soul of &3&lBubPVP" to run:
+		if {_p} has 1 of {rpgitem::bubpvpsoul}:
+			remove 1 of {rpgitem::bubpvpsoul} from {_p}
+			give 3 feather named "&3Jump Ability" to {_p}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+			send "&4ERROR: &cInsufficient Resources!" to {_p}
+	format gui slot 11 of {_p} with 1 slime ball named "&3Repulsor Ability" with lore " ", "&a&lCOST:" and "&8¬ &f1 Soul of &3&lBubPVP" to run:
+		if {_p} has 1 of {rpgitem::bubpvpsoul}:
+			remove 1 of {rpgitem::bubpvpsoul} from {_p}
+			give 1 slime ball named "&3Repulsor Ability" to {_p}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+			send "&4ERROR: &cInsufficient Resources!" to {_p}
+	format gui slot 12 of {_p} with 32 spectral arrow named "&3Golden Dart" with lore " ", "&a&lCOST:" and "&8¬ &f1 Soul of &3&lBubPVP" to run:
+		if {_p} has 1 of {rpgitem::bubpvpsoul}:
+			remove 1 of {rpgitem::bubpvpsoul} from {_p}
+			give 32 spectral arrow named "&3Golden Dart" to {_p}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+			send "&4ERROR: &cInsufficient Resources!" to {_p}
+	format gui slot 13 of {_p} with {rpgitem::floppercost} to run:
+		if {_p} has 1 of {rpgitem::bubpvpsoul}:
+			remove 1 of {rpgitem::bubpvpsoul} from {_p}
+			give 16 of {rpgitem::flopper} to {_p}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+			send "&4ERROR: &cInsufficient Resources!" to {_p}
+	format gui slot 14 of {_p} with 2 ender pearl named "&3Ender Pearl" with lore " ", "&a&lCOST:" and "&8¬ &f1 Soul of &3&lBubPVP" to run:
+		if {_p} has 1 of {rpgitem::bubpvpsoul}:
+			remove 1 of {rpgitem::bubpvpsoul} from {_p}
+			give 2 ender pearl named "&3Ender Pearl" to {_p}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+			send "&4ERROR: &cInsufficient Resources!" to {_p}
+	format gui slot 15 of {_p} with glowing prismarine shard named "&3Fragile Shard" with lore " ", "&a&lCOST:" and "&8¬ &f1 Soul of &3&lBubPVP" to run:
+		if {_p} has 1 of {rpgitem::bubpvpsoul}:
+			remove 1 of {rpgitem::bubpvpsoul} from {_p}
+			give 1 of {rpgitem::fragileshard} to {_p}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+			send "&4ERROR: &cInsufficient Resources!" to {_p}
+	format gui slot 16 of {_p} with {rpgitem::coffeecost} to run:
+		if {_p} has 1 of {rpgitem::bubpvpsoul}:
+			remove 1 of {rpgitem::bubpvpsoul} from {_p}
+			give 1 of {rpgitem::coffee} to {_p}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+			send "&4ERROR: &cInsufficient Resources!" to {_p}
+
+function compressor(p: player):
+	play sound "entity.chicken.egg" to {_p}
+	set {_u} to uuid of {_p}
+	open virtual chest inventory with size 5 named "&3Compressor / Decompressor" to {_p}
+	format gui slot (integers between 0 and 53) of {_p} with black stained glass pane named "&1"
+	format gui slot 2 of {_p} with paper named "&3Decompress Materials"
+	format gui slot 6 of {_p} with paper named "&3Compress Materials" with lore "&4&lTITAN &7rank required"
+	format gui slot 10 of {_p} with {rpgitem::compressedcobblestone} to run:
+		tradeItemToItem({_p}, 1, {rpgitem::compressedcobblestone}, 64, cobblestone)
+	format gui slot 11 of {_p} with {rpgitem::compressedcoal} to run:
+		tradeItemToItem({_p}, 1, {rpgitem::compressedcoal}, 64, coal)
+	format gui slot 12 of {_p} with {rpgitem::compressedironingot} to run:
+		tradeItemToItem({_p}, 1, {rpgitem::compressedironingot}, 64, iron ingot)
+	format gui slot 19 of {_p} with {rpgitem::compressedlapislazuli} to run:
+		tradeItemToItem({_p}, 1, {rpgitem::compressedlapislazuli}, 64, lapis lazuli)
+	format gui slot 20 of {_p} with {rpgitem::compressedredstonedust} to run:
+		tradeItemToItem({_p}, 1, {rpgitem::compressedredstonedust}, 64, redstone dust)
+	format gui slot 21 of {_p} with {rpgitem::compressedgoldingot} to run:
+		tradeItemToItem({_p}, 1, {rpgitem::compressedgoldingot}, 64, gold ingot)
+	format gui slot 28 of {_p} with {rpgitem::compressedemerald} to run:
+		tradeItemToItem({_p}, 1, {rpgitem::compressedemerald}, 64, emerald)
+	format gui slot 29 of {_p} with {rpgitem::compresseddiamond} to run:
+		tradeItemToItem({_p}, 1, {rpgitem::compresseddiamond}, 64, diamond)
+	format gui slot 30 of {_p} with {rpgitem::compressednetheriteingot} to run:
+		tradeItemToItem({_p}, 1, {rpgitem::compressednetheriteingot}, 64, netherite ingot)
+	format gui slot 38 of {_p} with {rpgitem::compressedobsidian} to run:
+		tradeItemToItem({_p}, 1, {rpgitem::compressedobsidian}, 64, obsidian)
+	format gui slot 14 of {_p} with cobblestone named "&fx64 Cobblestone" with lore "&7" and "&7(Worth 1 Compressed Cobblestone)" to run:
+		tradeItemToItemForTitan({_p}, 1, {rpgitem::compressedcobblestone}, 64, cobblestone)
+	format gui slot 15 of {_p} with coal named "&fx64 Coal" with lore "&7" and "&7(Worth 1 Compressed Coal)" to run:
+		tradeItemToItemForTitan({_p}, 1, {rpgitem::compressedcoal}, 64, coal)
+	format gui slot 16 of {_p} with iron ingot named "&fx64 Iron Ingots" with lore "&7" and "&7(Worth 1 Compressed Iron Ingot)" to run:
+		tradeItemToItemForTitan({_p}, 1, {rpgitem::compressedironingot}, 64, iron ingot)
+	format gui slot 23 of {_p} with lapis lazuli named "&fx64 Lapis Lazuli" with lore "&7" and "&7(Worth 1 Compressed Lapis Lazuli)" to run:
+		tradeItemToItemForTitan({_p}, 1, {rpgitem::compressedlapislazuli}, 64, lapis lazuli)
+	format gui slot 24 of {_p} with redstone dust named "&fx64 Redstone Dust" with lore "&7" and "&7(Worth 1 Compressed Redstone Dust)" to run:
+		tradeItemToItemForTitan({_p}, 1, {rpgitem::compressedredstonedust}, 64, redstone dust)
+	format gui slot 25 of {_p} with gold ingot named "&fx64 Gold Ingots" with lore "&7" and "&7(Worth 1 Compressed Gold Ingot)" to run:
+		tradeItemToItemForTitan({_p}, 1, {rpgitem::compressedgoldingot}, 64, gold ingot)
+	format gui slot 32 of {_p} with emerald named "&fx64 Emeralds" with lore "&7" and "&7(Worth 1 Compressed Emerald)" to run:
+		tradeItemToItemForTitan({_p}, 1, {rpgitem::compressedemerald}, 64, emerald)
+	format gui slot 33 of {_p} with diamond named "&fx64 Diamonds" with lore "&7" and "&7(Worth 1 Compressed Diamond)" to run:
+		tradeItemToItemForTitan({_p}, 1, {rpgitem::compresseddiamond}, 64, diamond)
+	format gui slot 34 of {_p} with netherite ingot named "&fx64 Netherite Ingots" with lore "&7" and "&7(Worth 1 Compressed Netherite Ingot)" to run:
+		tradeItemToItemForTitan({_p}, 1, {rpgitem::compressednetheriteingot}, 64, netherite ingot)
+	format gui slot 42 of {_p} with obsidian named "&fx64 Obsidian" with lore "&7" and "&7(Worth 1 Compressed Obsidian)" to run:
+		tradeItemToItemForTitan({_p}, 1, {rpgitem::compressedobsidian}, 64, obsidian)
+
+function tradeItemToItem(p: player, n1: integer, i1: item, n2: integer, i2: item):
+	if {_p} has {_n1} of {_i1}:
+		if {_p} can hold {_n2} of {_i2}:
+			remove {_n1} of {_i1} from {_p}
+			give {_p} {_n2} of {_i2}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+			send "&4ERROR: &cNot enough inventory space!" to {_p}
+	else:
+		play sound "entity.villager.no" to {_p}
+		send "&4ERROR: &cInsufficient materials!" to {_p}
+
+function tradeItemToItemForTitan(p: player, n2: integer, i2: item, n1: integer, i1: item):
+	if {_p} has permission "skript.compress":
+		if {_p} has {_n1} of {_i1}:
+			if {_p} can hold {_n2} of {_i2}:
+				remove {_n1} of {_i1} from {_p}
+				give {_p} {_n2} of {_i2}
+				play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+			else:
+				play sound "entity.villager.no" to {_p}
+				send "&4ERROR: &cNot enough inventory space!" to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+			send "&4ERROR: &cInsufficient materials!" to {_p}
+	else:
+		play sound "entity.villager.no" to {_p}
+		send "&4ERROR: &cYou must have &4&lTITAN &7Rank &cto do this!" to {_p}
+
+function crate(p: player):
+	play sound "entity.chicken.egg" to {_p}
+	set {_u} to uuid of {_p}
+	open virtual chest inventory with size 3 named "&3Crate Master" to {_p}
+	format gui slot (integers between 0 and 26) of {_p} with light gray stained glass pane named "&1"
+	format gui slot 0, 1, 2, 9, 11, 18, 19, and 20 of {_p} with lime stained glass pane named "&1"
+	format gui slot 3, 4, 5, 12, 14, 21, 22, and 23 of {_p} with blue stained glass pane named "&1"
+	format gui slot 6, 7, 8, 15, 17, 24, 25, and 26 of {_p} with magenta stained glass pane named "&1"
+	format gui slot 10 of {_p} with {rpgitem::commoncratekeyprice} to run:
+		if {balance::%{_u}%} is greater than or equal to 250:
+			give {_p} 1 of {rpgitem::commoncratekey}
+			remove 250 from {balance::%{_u}%}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+	format gui slot 13 of {_p} with {rpgitem::rarecratekeyprice} to run:
+		if {balance::%{_u}%} is greater than or equal to 1000:
+			give {_p} 1 of {rpgitem::rarecratekey}
+			remove 1000 from {balance::%{_u}%}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+	format gui slot 16 of {_p} with {rpgitem::epikcratekeyprice} to run:
+		if {balance::%{_u}%} is greater than or equal to 5000:
+			give {_p} 1 of {rpgitem::epikcratekey}
+			remove 5000 from {balance::%{_u}%}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+
+function medic(p: player):
+	play sound "entity.chicken.egg" to {_p}
+	set {_u} to uuid of {_p}
+	open virtual dropper inventory named "&3Medic" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, and 8 of {_p} with light gray stained glass pane named "&1"
+	set {_i} to golden apple named "&eGolden Apple" with lore "&8", "&a&lCOST:", and "&8¬ &a$50"
+	format gui slot 4 of {_p} with {_i} to run:
+		if {balance::%{_u}%} is greater than or equal to 50:
+			give {_p} 1 of {rpgitem::gapple}
+			remove 50 from {balance::%{_u}%}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		else:
+			play sound "entity.villager.no" to {_p}
+
+function welcomeGuide(p: player):
+	metadata value "talkingtonpc" of {_p} is not true
+	set metadata value "talkingtonpc" of {_p} to true
+	send "%nl%&e[NPC] &3Welcome Guide: &fHey there %{_p}%&f! Welcome to &3&lBubPVP! &fThis is a server where you mine, grind, pvp, and upgrade!%nl%" to {_p}
+	play sound "entity.villager.yes" to {_p}
+	wait 3 seconds
+	send "%nl%&e[NPC] &3Welcome Guide: &fTalk to the smiths ahead of me to upgrade your gear and to the Rock Collector to the left of me to sell your resources!%nl%" to {_p}
+	play sound "entity.villager.yes" to {_p}
+	wait 3 seconds
+	send "%nl%&e[NPC] &3Welcome Guide: &fRemember to read the rules &c(/rules), &fand look at the help menu &c(/help) &fto learn about all of &3&lBubPVP's &famazing features!%nl%" to {_p}
+	play sound "entity.villager.yes" to {_p}
+	wait 3 seconds
+	send "%nl%&e[NPC] &3Welcome Guide: &fIf you would like to mine in peace, make sure to go to the &3Safe Cave &c(/safecave)!%nl%" to {_p}
+	play sound "entity.villager.yes" to {_p}
+	wait 3 seconds
+	send "%nl%&e[NPC] &3Welcome Guide: &fAlso, make sure to check out the brand new &3&lBubPVP &fbattlepass &c(/battlepass)! &fComplete quests, tier up, and unlock awesome rewards!%nl%" to {_p}
+	play sound "entity.villager.yes" to {_p}
+	wait 3 seconds
+	send "%nl%&e[NPC] &3Welcome Guide: &fGood luck %{_p}%! Have fun!%nl%" to {_p}
+	play sound "entity.villager.yes" to {_p}
+	clear metadata value "talkingtonpc" of {_p}
+
+function sellmaterial(p: player):
+	set {_u} to uuid of {_p}
+	play sound "entity.chicken.egg" to {_p}
+	open virtual chest inventory with size 6 named "&3Rock Collector" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with black stained glass pane named "&1"
+	format gui slot 10, 11, 12, 13, 14, 15, 16, 19, 21, 23, 25, 28, 29, 31, 33, 34, 37, 38, 39, 40, 41, 42, and 43 of {_p} with light gray stained glass pane named "&1"
+	set {_a} to 19
+	loop 10 times:
+		if loop-number is 1:
+			set {_i} to cobblestone named "&fCobblestone" with lore "&8", "&ex1 &7» &3$1", "&ex64 &7» &3$64", "&8", "&eClick &fto sell &e1", and "&eShift-Click &fto sell &e64"
+		else if loop-number is 2:
+			set {_i} to coal named "&fCoal" with lore "&8", "&ex1 &7» &3$1", "&ex64 &7» &3$75", "&8", "&eClick &fto sell &e1", and "&eShift-Click &fto sell &e64"
+		else if loop-number is 3:
+			set {_i} to iron ingot named "&fIron" with lore "&8", "&ex1 &7» &3$2", "&ex64 &7» &3$128", "&8", "&eClick &fto sell &e1", and "&eShift-Click &fto sell &e64"
+		else if loop-number is 4:
+			set {_i} to lapis lazuli named "&fLapis" with lore "&8", "&ex1 &7» &3$2", "&ex64 &7» &3$150", "&8", "&eClick &fto sell &e1", and "&eShift-Click &fto sell &e64"
+		else if loop-number is 5:
+			set {_i} to redstone dust named "&fRedstone" with lore "&8", "&ex1 &7» &3$3", "&ex64 &7» &3$192", "&8", "&eClick &fto sell &e1", and "&eShift-Click &fto sell &e64"
+		else if loop-number is 6:
+			add 4 to {_a}
+			set {_i} to gold ingot named "&fGold" with lore "&8", "&ex1 &7» &3$3", "&ex64 &7» &3$200", "&8", "&eClick &fto sell &e1", and "&eShift-Click &fto sell &e64"
+		else if loop-number is 7:
+			set {_i} to emerald named "&fEmerald" with lore "&8", "&ex1 &7» &3$4", "&ex64 &7» &3$256", "&8", "&eClick &fto sell &e1", and "&eShift-Click &fto sell &e64"
+		else if loop-number is 8:
+			set {_i} to diamond named "&fDiamond" with lore "&8", "&ex1 &7» &3$4", "&ex64 &7» &3$275", "&8", "&eClick &fto sell &e1", and "&eShift-Click &fto sell &e64"
+		else if loop-number is 9:
+			set {_i} to netherite ingot named "&fNetherite" with lore "&8", "&ex1 &7» &3$6", "&ex64 &7» &3$400", "&8", "&eClick &fto sell &e1", and "&eShift-Click &fto sell &e64"
+		else if loop-number is 10:
+			set {_i} to obsidian named "&fObsidian" with lore "&8", "&ex1 &7» &3$10", "&ex64 &7» &3$640", "&8", "&eClick &fto sell &e1", and "&eShift-Click &fto sell &e64"
+		format gui slot ({_a} + loop-number) of {_p} with {_i} to run:
+			if clicked slot is 20:
+				set {_ei} to cobblestone
+			else if clicked slot is 21:
+				set {_ei} to coal
+			else if clicked slot is 22:
+				set {_ei} to iron ingot
+			else if clicked slot is 23:
+				set {_ei} to lapis lazuli
+			else if clicked slot is 24:
+				set {_ei} to redstone dust
+			else if clicked slot is 29:
+				set {_ei} to gold ingot
+			else if clicked slot is 30:
+				set {_ei} to emerald
+			else if clicked slot is 31:
+				set {_ei} to diamond
+			else if clicked slot is 32:
+				set {_ei} to netherite ingot
+			else if clicked slot is 33:
+				set {_ei} to obsidian
+			if click type is left mouse button:
+				set {_t} to line 2 of event-item's lore
+				replace all "&ex1 &7» &3$" with "" in {_t}
+				set {_a} to {_t} parsed as a number
+				if {_p} has 1 of {_ei}:
+					remove 1 of {_ei} from {_p}
+					play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+					add {_a} to {balance::%{_u}%}
+				else:
+					send "&4ERROR: &cYou don't have any of this item!" to {_p}
+					play sound "entity.villager.no" to {_p}
+			else if click type is right mouse button:
+				set {_t} to line 2 of event-item's lore
+				replace all "&ex1 &7» &3$" with "" in {_t}
+				set {_a} to {_t} parsed as a number
+				if {_p} has 1 of {_ei}:
+					remove 1 of {_ei} from {_p}
+					play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+					add {_a} to {balance::%{_u}%}
+				else:
+					send "&4ERROR: &cYou don't have any of this item!" to {_p}
+					play sound "entity.villager.no" to {_p}
+			else if click type is left mouse button with shift:
+				set {_t} to line 3 of event-item's lore
+				replace all "&ex64 &7» &3$" with "" in {_t}
+				set {_a} to {_t} parsed as a number
+				if {_p} has 64 of {_ei}:
+					remove 64 of {_ei} from {_p}
+					play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+					add {_a} to {balance::%{_u}%}
+				else:
+					send "&4ERROR: &cYou don't have enough of this item!" to {_p}
+					play sound "entity.villager.no" to {_p}
+			else if click type is right mouse button with shift:
+				set {_t} to line 3 of event-item's lore
+				replace all "&ex64 &7» &3$" with "" in {_t}
+				set {_a} to {_t} parsed as a number
+				if {_p} has 64 of {_ei}:
+					remove 64 of {_ei} from {_p}
+					play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+					add {_a} to {balance::%{_u}%}
+				else:
+					send "&4ERROR: &cYou don't have enough of this item!" to {_p}
+					play sound "entity.villager.no" to {_p}
+
+function pickaxeforger(p: player):
+	play sound "entity.chicken.egg" to {_p}
+	open virtual chest inventory with size 6 named "&3Pickaxe Forger" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with black stained glass pane named "&1"
+	format gui slot 10, 11, 12, 13, 14, 15, 16, 19, 21, 23, 25, 28, 29, 31, 33, 34, 37, 38, 39, 40, 41, 42, and 43 of {_p} with light gray stained glass pane named "&1"
+	format gui slot 20 of {_p} with {rpgitem::clickwoodenpickaxe} to run:
+		pickaxes(player, 0)
+	format gui slot 22 of {_p} with {rpgitem::clickstonepickaxe} to run:
+		pickaxes(player, 5)
+	format gui slot 24 of {_p} with {rpgitem::clickironpickaxe} to run:
+		pickaxes(player, 10)
+	format gui slot 30 of {_p} with {rpgitem::clickdiamondpickaxe} to run:
+		pickaxes(player, 20)
+	format gui slot 32 of {_p} with {rpgitem::clicknetheritepickaxe} to run:
+		pickaxes(player, 30)
+
+function swordforger(p: player):
+	play sound "entity.chicken.egg" to {_p}
+	open virtual chest inventory with size 6 named "&3Sword Forger" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with black stained glass pane named "&1"
+	format gui slot 10, 11, 12, 13, 14, 15, 16, 19, 21, 23, 25, 28, 29, 31, 33, 34, 37, 38, 39, 40, 41, 42, and 43 of {_p} with light gray stained glass pane named "&1"
+	format gui slot 20 of {_p} with {rpgitem::clickwoodensword} to run:
+		swords(player, 0)
+	format gui slot 22 of {_p} with {rpgitem::clickstonesword} to run:
+		swords(player, 5)
+	format gui slot 24 of {_p} with {rpgitem::clickironsword} to run:
+		swords(player, 10)
+	format gui slot 30 of {_p} with {rpgitem::clickdiamondsword} to run:
+		swords(player, 20)
+	format gui slot 32 of {_p} with {rpgitem::clicknetheritesword} to run:
+		swords(player, 30)
+
+function armorsmith(p: player):
+	play sound "entity.chicken.egg" to {_p}
+	open virtual chest inventory with size 6 named "&3Armorsmith" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with black stained glass pane named "&1"
+	format gui slot 10, 11, 12, 13, 14, 15, 16, 19, 21, 23, 25, 28, 29, 31, 33, 34, 37, 38, 39, 40, 41, 42, and 43 of {_p} with light gray stained glass pane named "&1"
+	format gui slot 20 of {_p} with {rpgitem::clickleatherarmor} to run:
+		armor(player, 0)
+	format gui slot 22 of {_p} with {rpgitem::clickchainarmor} to run:
+		armor(player, 5)
+	format gui slot 24 of {_p} with {rpgitem::clickironarmor} to run:
+		armor(player, 10)
+	format gui slot 30 of {_p} with {rpgitem::clickdiamondarmor} to run:
+		armor(player, 20)
+	format gui slot 32 of {_p} with {rpgitem::clicknetheritearmor} to run:
+		armor(player, 30)
+
+command /swordcost <number> <item> <number>:
+	permission: op
+	permission message: &cHey! You can't do that!
+	trigger:
+		if arg-1 is less than or equal to 50:
+			if arg-1 is greater than or equal to 1:
+				set {_a} to arg-1
+				set {swordcost::%arg-1%} to arg-2
+				set {swordcostamount::%arg-1%} to arg-3
+				send "&cYou now need &f%arg-3% %arg-2% &cto upgrade from &fsword %{_a} - 1% to %arg-1%"
+
+function swords(p: player, n: number):
+	set {_u} to uuid of {_p}
+	if {_p}'s level is greater than or equal to {_n}:
+		if {_n} is 0:
+			set {_t} to 0
+			set {_type} to "Wooden"
+		else if {_n} is 5:
+			set {_t} to 10
+			set {_type} to "Stone"
+		else if {_n} is 10:
+			set {_t} to 20
+			set {_type} to "Iron"
+		else if {_n} is 20:
+			set {_t} to 30
+			set {_type} to "Diamond"
+		else if {_n} is 30:
+			set {_t} to 40
+			set {_type} to "Netherite"
+		play sound "entity.chicken.egg" to {_p}
+		open virtual chest inventory with size 6 named "&3%{_type}% Sword" to {_p}
+		format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with black stained glass pane named "&1"
+		format gui slot 10, 11, 12, 13, 14, 15, 16, 19, 21, 23, 25, 28, 29, 31, 33, 34, 37, 38, 39, 40, 41, 42, and 43 of {_p} with light gray stained glass pane named "&1"
+		format gui slot 49 of {_p} with barrier named "&4&lBACK" to run:
+			swordforger({_p})
+		set {_a} to 19
+		loop 10 times:
+			if loop-number is 6:
+				add 4 to {_a}
+			set {_ff} to ({_t} + loop-number)
+			set {_i} to {rpgitem::sword%{_ff}%}
+			set {_line} to 0
+			while {_lll} is not set:
+				if line ({_line} + 1) of {_i}'s lore is set:
+					add 1 to {_line}
+				else:
+					set {_lll} to "URMOM"
+			if {_ff} is not 1:
+				set line ({_line} + 1) of {_i}'s lore to "&7"
+				set line ({_line} + 2) of {_i}'s lore to "&a&lCOST:"
+				set line ({_line} + 3) of {_i}'s lore to "&8¬ &f%{swordcostamount::%{_ff}%}% %{swordcost::%{_ff}%}%"
+				set line ({_line} + 4) of {_i}'s lore to "&8¬ &a$%ceil(80 * 1.076^({_t} + loop-number))%"
+				replace all " block" and " dust" and " item" in lore of {_i} with ""
+				if loop-number is not 1:
+					set line ({_line} + 5) of {_i}'s lore to "&8¬ [&7%roman numeral of ({_t} - 1 + loop-number)%&8] &f%{_type}% Sword"
+				else:
+					set line ({_line} + 5) of {_i}'s lore to "&8¬ %display name of {rpgitem::sword%{_t}%}%"
+			else:
+				set line 1 of {_i}'s lore to "&8"
+				set line 2 of {_i}'s lore to "&a&lCOST:"
+				set line 3 of {_i}'s lore to "&8¬ &a$80"
+				set line 4 of {_i}'s lore to "&a"
+				set line 5 of {_i}'s lore to "&4&lWARNING"
+				set line 6 of {_i}'s lore to "&8¬ &fThis is NOT a sword upgrade"
+				set line 7 of {_i}'s lore to "&8¬ &fClick this to buy a NEW sword"
+			format gui slot (loop-number + {_a}) of {_p} with {_i} to run:
+				set {_name} to name of event-item
+				replace all "&8", "&7", "[", "] ", "&f", " Sword", "Wooden", "Stone", "Iron", "Diamond", and "Netherite" in {_name} with ""
+				set {_picknum} to arabic number of {_name}
+				set {_rp} to {_picknum} - 1
+				if {_picknum} is 1:
+					if {balance::%{_u}%} is greater than or equal to 80:
+						subtract 80 from {balance::%{_u}%}
+						give {_p} 1 of {rpgitem::sword1}
+						play sound "block.anvil.use" at pitch 2 to {_p}
+						stop
+					else:
+						play sound "entity.villager.no" to {_p}
+						send "&4ERROR: &cInsufficient Resources!" to {_p}
+						stop
+				if {_p} has {rpgitem::sword%{_rp}%}:
+					if {balance::%{_u}%} is greater than or equal to ceil(80 * 1.076^{_picknum}):
+						if {_p} has {swordcostamount::%{_picknum}%} of {swordcost::%{_picknum}%}:
+							subtract ceil(80 * 1.076^{_picknum}) from {balance::%{_u}%}
+							remove {rpgitem::sword%{_rp}%} from {_p}
+							give {_p} 1 of {rpgitem::sword%{_picknum}%}
+							play sound "block.anvil.use" at pitch 2 to {_p}
+							remove {swordcostamount::%{_picknum}%} of {swordcost::%{_picknum}%} from {_p}
+						else:
+							play sound "entity.villager.no" to {_p}
+							send "&4ERROR: &cInsufficient Resources!" to {_p}
+					else:
+						play sound "entity.villager.no" to {_p}
+						send "&4ERROR: &cInsufficient Resources!" to {_p}
+				else:
+					play sound "entity.villager.no" to {_p}
+					send "&4ERROR: &cInsufficient Resources!" to {_p}
+	else:
+		play sound "entity.villager.no" to {_p}
+		send "&4ERROR: &cYou must be level &a&l%{_n}% &cor higher to open this category!" to {_p}
+
+command /pickcost <number> <item> <number>:
+	permission: op
+	permission message: &cHey! You can't do that!
+	trigger:
+		if arg-1 is less than or equal to 50:
+			if arg-1 is greater than or equal to 1:
+				set {_a} to arg-1
+				set {pickcost::%arg-1%} to arg-2
+				set {pickcostamount::%arg-1%} to arg-3
+				send "&cYou now need &f%arg-3% %arg-2% &cto upgrade from &fpickaxe %{_a} - 1% to %arg-1%"
+
+function pickaxes(p: player, n: number):
+	set {_u} to uuid of {_p}
+	if {_p}'s level is greater than or equal to {_n}:
+		if {_n} is 0:
+			set {_t} to 0
+			set {_type} to "Wooden"
+		else if {_n} is 5:
+			set {_t} to 10
+			set {_type} to "Stone"
+		else if {_n} is 10:
+			set {_t} to 20
+			set {_type} to "Iron"
+		else if {_n} is 20:
+			set {_t} to 30
+			set {_type} to "Diamond"
+		else if {_n} is 30:
+			set {_t} to 40
+			set {_type} to "Netherite"
+		play sound "entity.chicken.egg" to {_p}
+		open virtual chest inventory with size 6 named "&3%{_type}% Pickaxe" to {_p}
+		format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with black stained glass pane named "&1"
+		format gui slot 10, 11, 12, 13, 14, 15, 16, 19, 21, 23, 25, 28, 29, 31, 33, 34, 37, 38, 39, 40, 41, 42, and 43 of {_p} with light gray stained glass pane named "&1"
+		format gui slot 49 of {_p} with barrier named "&4&lBACK" to run:
+			pickaxeforger({_p})
+		set {_a} to 19
+		loop 10 times:
+			if loop-number is 6:
+				add 4 to {_a}
+			set {_ff} to ({_t} + loop-number)
+			set {_i} to {rpgitem::pick%{_ff}%}
+			set {_line} to 0
+			while {_lll} is not set:
+				if line ({_line} + 1) of {_i}'s lore is set:
+					add 1 to {_line}
+				else:
+					set {_lll} to "URMOM"
+			if {_ff} is not 1:
+				set line ({_line} + 1) of {_i}'s lore to "&7"
+				set line ({_line} + 2) of {_i}'s lore to "&a&lCOST:"
+				set line ({_line} + 3) of {_i}'s lore to "&8¬ &f%{pickcostamount::%{_ff}%}% %{pickcost::%{_ff}%}%"
+				set line ({_line} + 4) of {_i}'s lore to "&8¬ &a$%ceil(100 * 1.08^({_t} + loop-number))%"
+				replace all " block" and " dust" and " item" in lore of {_i} with ""
+				if loop-number is not 1:
+					set line ({_line} + 5) of {_i}'s lore to "&8¬ [&7%roman numeral of ({_t} - 1 + loop-number)%&8] &f%{_type}% Pickaxe"
+				else:
+					set line ({_line} + 5) of {_i}'s lore to "&8¬ %display name of {rpgitem::pick%{_t}%}%"
+			else:
+				set line 1 of {_i}'s lore to "&8"
+				set line 2 of {_i}'s lore to "&a&lCOST:"
+				set line 3 of {_i}'s lore to "&8¬ &a$100"
+				set line 4 of {_i}'s lore to "&a"
+				set line 5 of {_i}'s lore to "&4&lWARNING"
+				set line 6 of {_i}'s lore to "&8¬ &fThis is NOT a pick upgrade"
+				set line 7 of {_i}'s lore to "&8¬ &fClick this to buy a NEW pick"
+			format gui slot (loop-number + {_a}) of {_p} with {_i} to run:
+				set {_name} to name of event-item
+				replace all "&8", "&7", "[", "] ", "&f", " Pickaxe", "Wooden", "Stone", "Iron", "Diamond", and "Netherite" in {_name} with ""
+				set {_picknum} to arabic number of {_name}
+				set {_rp} to {_picknum} - 1
+				if {_picknum} is 1:
+					if {balance::%{_u}%} is greater than or equal to 100:
+						subtract 100 from {balance::%{_u}%}
+						give {_p} 1 of {rpgitem::pick1}
+						play sound "block.anvil.use" at pitch 2 to {_p}
+						stop
+					else:
+						play sound "entity.villager.no" to {_p}
+						send "&4ERROR: &cInsufficient Resources!" to {_p}
+						stop
+				if {_p} has {rpgitem::pick%{_rp}%}:
+					if {balance::%{_u}%} is greater than or equal to ceil(100 * 1.08^{_picknum}):
+						if {_p} has {pickcostamount::%{_picknum}%} of {pickcost::%{_picknum}%}:
+							subtract ceil(100 * 1.08^{_picknum}) from {balance::%{_u}%}
+							remove {rpgitem::pick%{_rp}%} from {_p}
+							give {_p} 1 of {rpgitem::pick%{_picknum}%}
+							play sound "block.anvil.use" at pitch 2 to {_p}
+							remove {pickcostamount::%{_picknum}%} of {pickcost::%{_picknum}%} from {_p}
+						else:
+							play sound "entity.villager.no" to {_p}
+							send "&4ERROR: &cInsufficient Resources!" to {_p}
+					else:
+						play sound "entity.villager.no" to {_p}
+						send "&4ERROR: &cInsufficient Resources!" to {_p}
+				else:
+					play sound "entity.villager.no" to {_p}
+					send "&4ERROR: &cInsufficient Resources!" to {_p}
+	else:
+		play sound "entity.villager.no" to {_p}
+		send "&4ERROR: &cYou must be level &a&l%{_n}% &cor higher to open this category!" to {_p}
+
+command /armorcost <number> <item> <number>:
+	permission: op
+	permission message: &cHey! You can't do that!
+	trigger:
+		if arg-1 is less than or equal to 25:
+			if arg-1 is greater than or equal to 1:
+				set {_a} to arg-1
+				set {armorcost::%arg-1%} to arg-2
+				set {armorcostamount::%arg-1%} to arg-3
+				send "&cYou now need &f%arg-3% %arg-2% &cto upgrade from &farmor %{_a} - 1% to %arg-1%"
+				
+function armorloop(p: player):
+	loop 4 times:
+		format gui slot (1 + (loop-number * 9)) of {_p} with red concrete named "&4&lNOT WEARING"
+	if {_p}'s helmet is not air:
+		format gui slot 10 of {_p} with {_p}'s helmet
+	if {_p}'s chestplate is not air:
+		format gui slot 19 of {_p} with {_p}'s chestplate
+	if {_p}'s leggings is not air:
+		format gui slot 28 of {_p} with {_p}'s leggings
+	if {_p}'s boots is not air:
+		format gui slot 37 of {_p} with {_p}'s boots
+
+function armor(p: player, n: number):
+	set {_u} to uuid of {_p}
+	if {_p}'s level is greater than or equal to {_n}:
+		if {_n} is 0:
+			set {_t} to 0
+			set {_type} to "Leather"
+		else if {_n} is 5:
+			set {_t} to 5
+			set {_type} to "Chain"
+		else if {_n} is 10:
+			set {_t} to 10
+			set {_type} to "Iron"
+		else if {_n} is 20:
+			set {_t} to 15
+			set {_type} to "Diamond"
+		else if {_n} is 30:
+			set {_t} to 20
+			set {_type} to "Netherite"
+		play sound "entity.chicken.egg" to {_p}
+		open virtual chest inventory with size 6 named "&3%{_type}% Armor" to {_p}
+		format gui slot 11, 20, 29, 38, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with black stained glass pane named "&1"
+		format gui slot 49 of {_p} with barrier named "&4&lBACK" to run:
+			armorsmith({_p})
+		armorloop({_p})
+		set {_a} to 11
+		loop 20 times:
+			if loop-number is 1:
+				set {_at} to "helmet"
+			else if loop-number is 6:
+				set {_at} to "chestplate"
+				subtract 5 from {_t}
+				add 4 to {_a}
+			else if loop-number is 11:
+				set {_at} to "legging"
+				subtract 5 from {_t}
+				add 4 to {_a}
+			else if loop-number is 16:
+				set {_at} to "boot"
+				subtract 5 from {_t}
+				add 4 to {_a}
+			set {_ff} to {_t} + loop-number
+			set {_fff} to {_ff} - 1
+			set {_i} to {rpgitem::%{_at}%%{_ff}%}
+			while {_lll} is not set:
+				if line ({_line} + 1) of {_i}'s lore is set:
+					add 1 to {_line}
+				else:
+					set {_lll} to "URMOM"
+			if ({_ff}) is not 1:
+				set line ({_line} + 1) of {_i}'s lore to "&7"
+				set line ({_line} + 2) of {_i}'s lore to "&a&lCOST:"
+				set line ({_line} + 3) of {_i}'s lore to "&8¬ &f%{armorcostamount::%{_ff}%}% %{armorcost::%{_ff}%}%"
+				set line ({_line} + 4) of {_i}'s lore to "&8¬ &a$%ceil(100 * 1.12^{_ff})%"
+				replace all " block" and " dust" and " item" in lore of {_i} with ""
+				set line ({_line} + 5) of {_i}'s lore to "&8¬ %display name of {rpgitem::%{_at}%%{_fff}%}%"
+			else:
+				set line 1 of {_i}'s lore to "&8"
+				set line 2 of {_i}'s lore to "&a&lCOST:"
+				set line 3 of {_i}'s lore to "&8¬ &a$100"
+			set {_aa} to {_a} + loop-number
+			format gui slot {_aa} of {_p} with {_i} to run:
+				set {_name} to name of event-item
+				replace all "&8", "&7", "[", "]", "&f", "Leather", "Chestplate", "Leggings", "Boots", "Helmet", "Chain", "Iron", "Diamond", " ", and "Netherite" in {_name} with ""
+				set {_an} to arabic number of {_name}
+				if name of event-item contains "Helmet":
+					set {_art} to "helmet"
+				if name of event-item contains "Chestplate":
+					set {_art} to "chestplate"
+				if name of event-item contains "Leggings":
+					set {_art} to "legging"
+				if name of event-item contains "Boots":
+					set {_art} to "boot"
+				if {_an} is 1:
+					if {balance::%{_u}%} is greater than or equal to 100:
+						subtract 100 from {balance::%{_u}%}
+						give {_p} 1 of {rpgitem::%{_art}%1}
+						play sound "block.anvil.use" at pitch 2 to {_p}
+						stop
+					else:
+						play sound "entity.villager.no" to {_p}
+						send "&4ERROR: &cInsufficient Resources!" to {_p}
+						stop
+				set {_rp} to {_an} - 1
+				if {_p} has {rpgitem::%{_art}%%{_rp}%}:
+					if {balance::%{_u}%} is greater than or equal to ceil(100 * 1.12^{_an}):
+						if {_p} has {armorcostamount::%{_an}%} of {armorcost::%{_an}%}:
+							if {_p} can hold {rpgitem::%{_art}%%{_an}%}:
+								subtract ceil(100 * 1.12^{_an}) from {balance::%{_u}%}
+								remove {rpgitem::%{_art}%%{_rp}%} from {_p}
+								give {_p} 1 of {rpgitem::%{_art}%%{_an}%}
+								armorloop({_p})
+								play sound "block.anvil.use" at pitch 2 to {_p}
+								remove {armorcostamount::%{_an}%} of {armorcost::%{_an}%} from {_p}
+							else:
+								play sound "entity.villager.no" to {_p}
+								send "&4ERROR: &cNot enough inventory space!" to {_p}
+						else:
+							play sound "entity.villager.no" to {_p}
+							send "&4ERROR: &cInsufficient Resources!" to {_p}
+					else:
+						play sound "entity.villager.no" to {_p}
+						send "&4ERROR: &cInsufficient Resources!" to {_p}
+				else:
+					play sound "entity.villager.no" to {_p}
+					send "&4ERROR: &cInsufficient Resources!" to {_p}
+	else:
+		play sound "entity.villager.no" to {_p}
+		send "&4ERROR: &cYou must be level &a&l%{_n}% &cor higher to open this category!" to {_p}
