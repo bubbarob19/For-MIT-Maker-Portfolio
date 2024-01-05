@@ -1,0 +1,791 @@
+on right click:
+	if player is holding {menu.rpgitem}:
+		menu(player)
+
+command /menu:
+	trigger:
+		menu(player)
+
+function menu(p: player):
+	play sound "ui.button.click" for {_p}
+	open virtual chest inventory with size 3 named "&c&lBubRPG &bVirtual Menu" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 19, 20, 21, 22, 23, 24, 25, and 26 of {_p} with gray stained glass pane named "&a"
+	format gui slot 11, 12, 13, 14, and 15 of {_p} with black stained glass pane named "&a"
+	format gui slot 10 of {_p} with book named "&cQuests" to run:
+		questmenu(player)
+	format gui slot 12 of {_p} with chest named "&cCollection" to run:
+		collection(player)
+	format gui slot 14 of {_p} with paper named "&cCrafting Recipes" to run:
+		recipes(player, 1)
+	format gui slot 15 of {_p} with cooked chicken named "&cCooking Recipes" to run:
+		cookingRecipes(player, 1)
+	format gui slot 16 of {_p} with {skillsclickything.rpgitem} to run:
+		skills(player)
+
+function collection(p: player):
+	play sound "ui.button.click" for {_p}
+	open virtual chest inventory with size 6 named "&cCollection" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with gray stained glass pane named "&a"
+	format gui slot 10, 11, 12, 13, 14, 15, 16, 19, 25, 28, 34, 37, 38, 39, 40, 41, 42, and 43 of {_p} with black stained glass pane named "&a"
+	format gui slot 53 of {_p} with barrier named "&4Back To Menu" to run:
+		menu(player)
+	format gui slot 13 of {_p} with paper named "&cYour Collection"
+	format gui slot 20 of {_p} with wheat named "&cAgriculture" to run:
+		loopcollection(player, "Agriculture")
+	format gui slot 21 of {_p} with steak named "&cCulinary" to run:
+		loopcollection(player, "Culinary")
+	format gui slot 22 of {_p} with coal named "&cMining" to run:
+		loopcollection(player, "Mining")
+	format gui slot 23 of {_p} with oak leaf named "&cNature" to run:
+		loopcollection(player, "Nature")
+	format gui slot 24 of {_p} with raw salmon named "&cFishing" to run:
+		loopcollection(player, "Fishing")
+	format gui slot 29 of {_p} with white wool named "&cAnimal" to run:
+		loopcollection(player, "Animal")
+	format gui slot 30 of {_p} with bone named "&cMonster" to run:
+		loopcollection(player, "Monster")
+	format gui slot 31 of {_p} with {gearcollection.rpgitem} to run:
+		loopcollection(player, "Gear")
+	format gui slot 32 of {_p} with red dye named "&cMagic" to run:
+		loopcollection(player, "Magic")
+	format gui slot 33 of {_p} with stick named "&cMiscellaneous" to run:
+		loopcollection(player, "Miscellaneous")
+	
+function collectionitemget(p: player, i: item):
+	set {_u} to uuid of {_p}
+	set {_in} to display name of {_i}
+	if size of {collectionitems::*} is 0:
+		stop
+	else:
+		loop {collectionitems::*}:
+			set {_li} to loop-variable
+			if {_i} is {_li}:
+				set {_vn} to loop-index
+				replace all "{" in {_vn} with ""
+				replace all "}" in {_vn} with ""
+				replace all "." in {_vn} with ""
+				if {pickupof%{_vn}%::%{_p}%} is true:
+					stop loop
+				else:
+					send title "&cITEM FOUND! %{_in}%" with subtitle "&bCheck Your Collection!" to {_p} for 5 seconds
+					play sound "ui.toast.in" to {_p}
+					set {pickupof%{_vn}%::%{_u}%} to true
+					stop loop
+
+function loopcollection(p: player, t: text):
+	set {_u} to uuid of {_p}
+	play sound "ui.button.click" for {_p}
+	open virtual chest inventory with size 6 named "&c%{_t}% Collection" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with gray stained glass pane named "&a"
+	format gui slot 53 of {_p} with barrier named "&4Back To Menu" to run:
+		menu(player)
+	loop 28 times:
+		if {_n} is not set:
+			set {_n} to 9
+		add 1 to {_n}
+		if {_n} is 17, 26 or 35:
+			add 2 to {_n}
+		if {%{_t}%.collection%loop-number%} is set:
+			if {pickupof%{_t}%collection%loop-number%::%{_u}%} is true:
+				format gui slot {_n} of {_p} with {%{_t}%.collection%loop-number%}
+			else:
+				format gui slot {_n} of {_p} with red stained glass pane named "&4Item not found"
+		else:
+			format gui slot {_n} of {_p} with black stained glass pane named "&a"
+
+function questmenu(p: player):
+	play sound "ui.button.click" for {_p}
+	open virtual chest inventory with size 6 named "&cQuest Menu" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with gray stained glass pane named "&a"
+
+function skills(p: player):
+	set {_u} to uuid of {_p}
+	play sound "ui.button.click" for {_p}
+	open virtual chest inventory with size 6 named "&cSkills" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with gray stained glass pane named "&a"
+	format gui slot 10, 11, 12, 13, 14, 15, 16, 19, 25, 28, 34, 37, 38, 39, 40, 41, 42, and 43 of {_p} with black stained glass pane named "&a"
+	format gui slot 53 of {_p} with barrier named "&4Back To Menu" to run:
+		menu(player)
+	format gui slot 13 of {_p} with paper named "&cYour Skills"
+	if {farmingskilllevel::%{_u}%} is set:
+		set {_v} to floor({farmingskilllevel::%{_u}%})
+		set {_y} to {farmingskilllevel::%{_u}%} - {_v}
+		set {_o} to {_y} * 100
+		set {_n} to floor({_o})
+	if {farmingskilllevel::%{_u}%} is not set:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l0", "&fProgress &8» &30%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&30%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 1:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l0", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&30%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 2:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l1", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 3:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l2", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&32.5%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 4:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l3", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.05%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 5:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l4", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&f&lTool Unlock: &3Old Hoe"
+	else if {farmingskilllevel::%{_u}%} is less than 6:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l5", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&35%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 7:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l6", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.1%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 8:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l7", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&37.5%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 9:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l8", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.15%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 10:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l9", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&f&lArmor Unlock: Farmer Armor"
+	else if {farmingskilllevel::%{_u}%} is less than 11:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l10", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&310%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 12:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l11", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.2%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 13:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l12", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&312.5%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 14:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l13", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.25%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 15:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l14", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&f&lUnlock: &3[Blank]"
+	else if {farmingskilllevel::%{_u}%} is less than 16:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l15", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&315%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 17:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l16", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.3%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 18:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l17", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&317.5%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 19:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l18", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.35%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 20:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l19", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&f&lUnlock: &3[Blank]"
+	else if {farmingskilllevel::%{_u}%} is less than 21:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l20", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&320%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 22:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l21", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.4%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 23:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l22", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&322.5%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 24:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l23", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.45%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 25:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l24", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&f&lUnlock: &3[Blank]"
+	else if {farmingskilllevel::%{_u}%} is less than 26:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l25", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&325%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 27:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l26", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.5%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 28:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l27", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&327.5%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 29:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l28", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.55%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 30:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l29", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&f&lUnlock: &3[Blank]"
+	else if {farmingskilllevel::%{_u}%} is less than 31:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l30", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&330%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 32:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l31", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.6%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 33:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l32", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&332.5%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 34:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l33", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.65%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 35:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l34", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&f&lUnlock: &3[Blank]"
+	else if {farmingskilllevel::%{_u}%} is less than 36:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l35", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&335%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 37:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l36", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.7%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 38:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l37", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&337.5%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 39:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l38", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.75%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 40:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l39", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&f&lUnlock: &3[Blank]"
+	else if {farmingskilllevel::%{_u}%} is less than 41:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l40", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&340%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 42:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l41", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.8%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 43:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l42", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&342.5%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 44:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l43", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.85%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 45:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l44", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&f&lUnlock: &3[Blank]"
+	else if {farmingskilllevel::%{_u}%} is less than 46:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l45", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&345%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 47:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l46", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.9%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 48:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l47", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&347.5%% &f+ &32.5%%&7)"
+	else if {farmingskilllevel::%{_u}%} is less than 49:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l48", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&3+0.05%% &fCash Crop Chance &7(&30.95%% &f+ &30.05%%&7)", "&7[Chance of Finding Money on Crop Harvest]"
+	else if {farmingskilllevel::%{_u}%} is less than 50:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l49", "&fProgress &8» &3%{_n}%%%", "&3", "&fLVL UP Rewards:" and "&f&lUnlock: &3[Blank]"
+	else if {farmingskilllevel::%{_u}%} is greater than or equal to 50:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l50" and "&4&lMAX LEVEL"
+	else:
+		format gui slot 20 of {_p} with wheat named "&cFarming" with lore "&f&lLVL &8» &3&l0", "&fProgress &8» &30%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Crop Chance &7(&30%% &f+ &32.5%%&7)"
+	format gui slot 21 of {_p} with steak named "&cCooking" with lore "&f&lLVL &8» &3&l%floor({cookingskilllevel::%{_u}%})%", "&fProgress &8» &3%floor(100 * ({cookingskilllevel::%{_u}%} - floor({cookingskilllevel::%{_u}%})))%%%", "&3", "&fLVL UP Rewards:" and "&3LVL &3&l%floor({cookingskilllevel::%{_u}%}) + 1% &3Cooking Recipes"
+	if {miningskilllevel::%{_u}%} is set:
+		set {_v.mining} to floor({miningskilllevel::%{_u}%})
+		set {_y.mining} to {miningskilllevel::%{_u}%} - {_v.mining}
+		set {_o.mining} to {_y.mining} * 100
+		set {_n.mining} to floor({_o.mining})
+	if {miningskilllevel::%{_u}%} is not set:
+		format gui slot 22 of {_p} with coal named "&cMining" with lore "&f&lLVL &8» &3&l0", "&fProgress &8» &30%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Ore Chance &7(&30%% &f+ &32.5%%&7)"
+	else if {miningskilllevel::%{_u}%} is 0:
+		format gui slot 22 of {_p} with coal named "&cMining" with lore "&f&lLVL &8» &3&l0", "&fProgress &8» &30%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Ore Chance &7(&30%% &f+ &32.5%%&7)"			
+	else:
+		if {miningskilllevel::%{_u}%} is greater than or equal to 50:
+			format gui slot 22 of {_p} with coal named "&cMining" with lore "&f&lLVL &8» &3&l50" and "&4&lMAX LEVEL"
+		else:
+			loop 50 times:
+				if {miningskilllevel::%{_u}%} is less than loop-number:
+					if ceil({miningskilllevel::%{_u}%}) is divisible by 5:
+						format gui slot 22 of {_p} with coal named "&cMining" with lore "&f&lLVL &8» &3&l%loop-number - 1%", "&fProgress &8» &3%{_n.mining}%%%", "&3", "&fLVL UP Rewards:" and "&f&lUnlock: &3[Blank]"
+						stop loop
+					else:
+						set {_h.mining} to ((loop-number - floor(loop-number * (1/5))) * 2.5) - 2.5
+						format gui slot 22 of {_p} with coal named "&cMining" with lore "&f&lLVL &8» &3&l%loop-number - 1%", "&fProgress &8» &3%{_n.mining}%%%", "&3", "&fLVL UP Rewards:" and "&3+2.5%% &fDouble Ore Chance &7(&3%{_h.mining}%%% &f+ &32.5%%&7)"
+						stop loop
+	format gui slot 23 of {_p} with {smithingskill.rpgitem}
+	format gui slot 24 of {_p} with raw salmon named "&cFishing"
+	format gui slot 29 of {_p} with red dye named "&cWizardry"
+	format gui slot 30 of {_p} with {combatskill.rpgitem}
+	format gui slot 31 of {_p} with crafting table named "&cCrafting"
+	format gui slot 32 of {_p} with oak leaf named "&cGathering"
+	format gui slot 33 of {_p} with {adventuringskill.rpgitem}
+
+command /resetnewbubrpg:
+	permission: op
+	trigger:
+		delete {farmingskilllevel::*}
+		delete {doublecropchance::*}
+		delete {cashcropchance::*}
+		delete {doubleorechance::*}
+		delete {miningskilllevel::*}
+		delete {cookingskilllevel::*}
+		loop {balance::*}:
+			set {balance::%loop-index%} to 0
+
+function cooking(p: player, w: number, a: number):
+	set {_u} to uuid of {_p}
+	if {cookingskilllevel::%{_u}%} is greater than or equal to 50:
+		stop
+	else:
+		if {cookingskilllevel::%{_u}%} is not set:
+			set {cookingskilllevel::%{_u}%} to 0
+		loop {_a} times:
+			set {_c} to ceil({cookingskilllevel::%{_u}%})
+			if {_c} = {cookingskilllevel::%{_u}%}:
+				add 1 to {_c}
+			set {_b} to 1.1299 ^ {_c}
+			set {_t} to ((((1/8) * (1.13)) * {_w}) / {_b})
+			add {_t} to {cookingskilllevel::%{_u}%}
+			if {cookingskilllevel::%{_u}%} is greater than or equal to {_c}:
+				set {cooklvlup::%{_u}%} to "&7[ &3%{_c} - 1% &f---> &3%{_c}% &7]"
+
+on inventory close:
+	if name of event-inventory is "&f&lCOOKING TABLE":
+		if {cooklvlup::%player's uuid%} is set:
+			wait 5 ticks
+			play sound "entity.player.levelup" at pitch 0 to player
+			send title "&fCooking Skill &e&lLVL UP!" with subtitle "%{cooklvlup::%player's uuid%}%" to player for 5 seconds
+			set {_l::*} to {cooklvlup::%player's uuid%} split by " "
+			replace all "&3" in {_l::4} with ""
+			if {_l::4} parsed as a number is divisible by 5:
+				broadcast "&3&lLVL UP: &e%player% &fhas leveled up to Cooking Skill Level &3%{_l::4}%!"
+			delete {cooklvlup::%player's uuid%}
+
+
+function mining(p: player, i: item):
+	set {_u} to uuid of {_p}
+	collectionitemget({_p}, "%{_i}%" parsed as an item)
+	set {_pitch} to a random number between 1.9 and 2
+	play sound "entity.arrow.hit_player" at pitch {_pitch} to {_p}
+	if {_p} cannot hold {_i}:
+		send action bar "&cInventory Full! Sell your items!" to {_p}
+	chance of {doubleorechance::%{_u}%}:
+		give {_p} 1 of {_i}
+	give {_p} 1 of {_i}
+	if {miningskilllevel::%{_u}%} is greater than or equal to 50:
+		stop
+	else:
+		if {miningskilllevel::%{_u}%} is not set:
+			set {miningskilllevel::%{_u}%} to 0
+		set {_c} to ceil({miningskilllevel::%{_u}%})
+		if {_c} = {miningskilllevel::%{_u}%}:
+			add 1 to {_c}
+		set {_b} to 1.1899 ^ {_c}
+		set {_t} to (1.19 * (1/20)) / {_b}
+		add {_t} to {miningskilllevel::%{_u}%}
+		if {miningskilllevel::%{_u}%} is greater than or equal to {_c}:
+			if {_c} is divisible by 5:
+				broadcast "&3&lLVL UP: &e%{_p}% &fhas leveled up to Mining Skill Level &3%{_c}%!"
+			play sound "entity.player.levelup" at pitch 0 to {_p}
+			send title "&fMining Skill &e&lLVL UP!" with subtitle "&7[ &3%{_c} - 1% &f---> &3%{_c}% &7]" to {_p} for 5 seconds
+			if {_c} is greater than or equal to 50:
+				stop
+			else:
+				if {_c} is divisible by 5:
+					stop
+				else:
+					add .025 to {doubleorechance::%{_u}%}
+
+function farming(p: player, i: item):
+	set {_u} to uuid of {_p}
+	collectionitemget({_p}, "%{_i}%" parsed as an item)
+	set {_pitch} to a random number between 1.9 and 2
+	play sound "entity.arrow.hit_player" at pitch {_pitch} to {_p}
+	if {_p} cannot hold {_i}:
+		send action bar "&cInventory Full! Sell your items!" to {_p}
+	chance of {doublecropchance::%{_u}%}:
+		give {_p} 1 of {_i}
+	chance of {cashcropchance::%{_u}%}:
+		add 1 to {balance::%{_u}%}
+	give {_p} 1 of {_i}
+	if {farmingskilllevel::%{_u}%} is greater than or equal to 50:
+		stop
+	else:
+		if {farmingskilllevel::%{_u}%} is not set:
+			set {farmingskilllevel::%{_u}%} to 0
+		set {_c} to ceil({farmingskilllevel::%{_u}%})
+		if {_c} = {farmingskilllevel::%{_u}%}:
+			add 1 to {_c}
+		set {_b} to 1.1899 ^ {_c}
+		set {_t} to (1.19 * (1/100)) / {_b}
+		add {_t} to {farmingskilllevel::%{_u}%}
+		if {farmingskilllevel::%{_u}%} is greater than or equal to {_c}:
+			if {_c} is divisible by 5:
+				broadcast "&3&lLVL UP: &e%{_p}% &fhas leveled up to Farming Skill Level &3%{_c}%!"
+			play sound "entity.player.levelup" at pitch 0 to {_p}
+			send title "&fFarming Skill &e&lLVL UP!" with subtitle "&7[ &3%{_c} - 1% &f---> &3%{_c}% &7]" to {_p} for 5 seconds
+			if {_c} = 1:
+				set {doublecropchance::%{_u}%} to .025
+			else if {_c} = 2:
+				set {cashcropchance::%{_u}%} to .0005
+			else if {_c} = 3:
+				set {doublecropchance::%{_u}%} to .05
+			else if {_c} = 4:
+				set {cashcropchance::%{_u}%} to .001
+			else if {_c} = 5:
+				stop
+			else if {_c} = 6:
+				set {doublecropchance::%{_u}%} to .075
+			else if {_c} = 7:
+				set {cashcropchance::%{_u}%} to .0015
+			else if {_c} = 8:
+				set {doublecropchance::%{_u}%} to .1
+			else if {_c} = 9:
+				set {cashcropchance::%{_u}%} to .002
+			else if {_c} = 10:
+				stop
+			else if {_c} = 11:
+				set {doublecropchance::%{_u}%} to .125
+			else if {_c} = 12:
+				set {cashcropchance::%{_u}%} to .0025
+			else if {_c} = 13:
+				set {doublecropchance::%{_u}%} to .15
+			else if {_c} = 14:
+				set {cashcropchance::%{_u}%} to .003
+			else if {_c} = 15:
+				stop
+			else if {_c} = 16:
+				set {doublecropchance::%{_u}%} to .175
+			else if {_c} = 17:
+				set {cashcropchance::%{_u}%} to .0035
+			else if {_c} = 18:
+				set {doublecropchance::%{_u}%} to .2
+			else if {_c} = 19:
+				set {cashcropchance::%{_u}%} to .004
+			else if {_c} = 20:
+				stop
+			else if {_c} = 21:
+				set {doublecropchance::%{_u}%} to .225
+			else if {_c} = 22:
+				set {cashcropchance::%{_u}%} to .0045
+			else if {_c} = 23:
+				set {doublecropchance::%{_u}%} to .25
+			else if {_c} = 24:
+				set {cashcropchance::%{_u}%} to .005
+			else if {_c} = 25:
+				stop
+			else if {_c} = 26:
+				set {doublecropchance::%{_u}%} to .275
+			else if {_c} = 27:
+				set {cashcropchance::%{_u}%} to .0055
+			else if {_c} = 28:
+				set {doublecropchance::%{_u}%} to .3
+			else if {_c} = 29:
+				set {cashcropchance::%{_u}%} to .006
+			else if {_c} = 30:
+				stop
+			else if {_c} = 31:
+				set {doublecropchance::%{_u}%} to .325
+			else if {_c} = 32:
+				set {cashcropchance::%{_u}%} to .0065
+			else if {_c} = 33:
+				set {doublecropchance::%{_u}%} to .35
+			else if {_c} = 34:
+				set {cashcropchance::%{_u}%} to .007
+			else if {_c} = 35:
+				stop
+			else if {_c} = 36:
+				set {doublecropchance::%{_u}%} to .375
+			else if {_c} = 37:
+				set {cashcropchance::%{_u}%} to .0075
+			else if {_c} = 38:
+				set {doublecropchance::%{_u}%} to .4
+			else if {_c} = 39:
+				set {cashcropchance::%{_u}%} to .008
+			else if {_c} = 40:
+				stop
+			else if {_c} = 41:
+				set {doublecropchance::%{_u}%} to .425
+			else if {_c} = 42:
+				set {cashcropchance::%{_u}%} to .0085
+			else if {_c} = 43:
+				set {doublecropchance::%{_u}%} to .45
+			else if {_c} = 44:
+				set {cashcropchance::%{_u}%} to .009
+			else if {_c} = 45:
+				stop
+			else if {_c} = 46:
+				set {doublecropchance::%{_u}%} to .475
+			else if {_c} = 47:
+				set {cashcropchance::%{_u}%} to .0095
+			else if {_c} = 48:
+				set {doublecropchance::%{_u}%} to .5
+			else if {_c} = 49:
+				set {cashcropchance::%{_u}%} to .01
+			else if {_c} = 50:
+				stop
+			else:
+				stop
+		
+on break:
+	if event-block is stage 8 wheat plant:
+		if {farm::%player%} is not set:
+			cancel drops
+			farming(player, {rpgitem::wheat})
+			wait 10 seconds
+			set block at event-location to stage 8 wheat plant
+			set block below event-location to farmland
+	else if event-block is stage 7 wheat plant:
+		if {farm::%player%} is not set:
+			cancel drops
+			farming(player, {rpgitem::corn})
+			wait 10 seconds
+			set block at event-location to stage 7 wheat plant
+			set block below event-location to farmland
+	else if event-block is stage 6 wheat plant:
+		if {farm::%player%} is not set:
+			cancel drops
+			farming(player, {rpgitem::tomato})
+			wait 10 seconds
+			set block at event-location to stage 6 wheat plant
+			set block below event-location to farmland
+	else if event-block is stage 5 wheat plant:
+		if {farm::%player%} is not set:
+			cancel drops
+			farming(player, {rpgitem::onion})
+			wait 10 seconds
+			set block at event-location to stage 5 wheat plant
+			set block below event-location to farmland
+	else if event-block is stage 4 wheat plant:
+		if {farm::%player%} is not set:
+			cancel drops
+			farming(player, {rpgitem::cucumber})
+			wait 10 seconds
+			set block at event-location to stage 4 wheat plant
+			set block below event-location to farmland
+	else if event-block is stage 8 carrot plant:
+		if {farm::%player%} is not set:
+			cancel drops
+			farming(player, {rpgitem::carrot})
+			wait 10 seconds
+			set block at event-location to stage 8 carrot plant
+			set block below event-location to farmland
+	else if event-block is stage 7 carrot plant:
+		if {farm::%player%} is not set:
+			cancel drops
+			farming(player, {rpgitem::celery})
+			wait 10 seconds
+			set block at event-location to stage 7 carrot plant
+			set block below event-location to farmland
+	else if event-block is stage 6 carrot plant:
+		if {farm::%player%} is not set:
+			cancel drops
+			farming(player, {rpgitem::cauliflower})
+			wait 10 seconds
+			set block at event-location to stage 6 carrot plant
+			set block below event-location to farmland
+	else if event-block is stage 5 carrot plant:
+		if {farm::%player%} is not set:
+			cancel drops
+			farming(player, {rpgitem::greenbean})
+			wait 10 seconds
+			set block at event-location to stage 5 carrot plant
+			set block below event-location to farmland
+	else if event-block is stage 8 potato plant:
+		if {farm::%player%} is not set:
+			cancel drops
+			farming(player, {rpgitem::potato})
+			wait 10 seconds
+			set block at event-location to stage 8 potato plant
+			set block below event-location to farmland
+	else if event-block is stage 4 beetroot plant:
+		if {farm::%player%} is not set:
+			cancel drops
+			farming(player, {rpgitem::radish})
+			wait 10 seconds
+			set block at event-location to stage 4 beetroot plant
+			set block below event-location to farmland
+	else if event-block is coal ore:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::coal})
+			wait 30 seconds
+			set block at event-location to coal ore
+	else if event-block is iron ore:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::iron})
+			wait 30 seconds
+			set block at event-location to iron ore
+	else if event-block is gold ore:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::gold})
+			wait 30 seconds
+			set block at event-location to gold ore
+	else if event-block is diamond ore:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::diamond})
+			wait 30 seconds
+			set block at event-location to diamond ore
+	else if event-block is emerald ore:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::emerald})
+			wait 30 seconds
+			set block at event-location to emerald ore
+	else if event-block is redstone ore:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::ruby})
+			wait 30 seconds
+			set block at event-location to redstone ore
+	else if event-block is lapis lazuli ore:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::sapphire})
+			wait 30 seconds
+			set block at event-location to lapis lazuli ore
+	else if event-block is emerald block:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::peridot})
+			wait 30 seconds
+			set block at event-location to emerald block
+	else if event-block is iron block:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::silver})
+			wait 30 seconds
+			set block at event-location to iron block
+	else if event-block is redstone block:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::copper})
+			wait 30 seconds
+			set block at event-location to redstone block
+	else if event-block is lapis lazuli block:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::amethyst})
+			wait 30 seconds
+			set block at event-location to lapis lazuli block
+	else if event-block is yellow stained terracotta:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::topaz})
+			wait 30 seconds
+			set block at event-location to yellow stained terracotta
+	else if event-block is ancient debris:
+		if {mine::%player%} is not set:
+			cancel drops
+			set event-block to bedrock
+			mining(player, {rpgitem::polynite})
+			wait 30 seconds
+			set block at event-location to ancient debris
+
+function recipes(p: player, n: number):
+	play sound "ui.button.click" for {_p}
+	set {_s} to ceil(size of {recipelist::*} / 36)
+	open virtual chest inventory with size 6 named "&cRecipes &7» &fPage &c&l%{_n}%" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 53, 52, 51, 50, 49, 48, 47, 46, and 45 of {_p} with white stained glass pane named "&f"
+	format gui slot 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, and 44 of {_p} with black stained glass pane named "&f"
+	format gui slot 53 of {_p} with barrier named "&4Back To Menu" to run:
+		menu(player)
+	if {_n} is 1:
+		format gui slot 48 of {_p} with red concrete named "&4"
+	else:
+		format gui slot 48 of {_p} with arrow named "&4Page %{_n} - 1%" to run:
+			recipes({_p}, {_n} - 1)
+	if {_s} is {_n}:
+		format gui slot 50 of {_p} with red concrete named "&4"
+	else:
+		format gui slot 50 of {_p} with arrow named "&4Page %{_n} + 1%" to run:
+			recipes({_p}, {_n} + 1)
+	set {_v} to ({_n} - 1) * 36
+	loop {recipelist::*}:
+		if {_o} is not set:
+			set {_o} to 0
+		add 1 to {_o}
+		if {_o} is greater than {_v}:
+			set {_c} to {_o} - {_v}
+			set {_%{_c}%} to loop-index
+			if {claimedrecipes::%{_u}%::%loop-index%} is set:
+				format gui slot ({_o} - {_v}) + 8 of {_p} with {recipe::%loop-index%::result} to run:
+					set {_sn} to index of event-slot
+					set {_rsn} to {_sn} - 8
+					play sound "ui.button.click" to {_p}
+					open virtual chest inventory with size 6 named "&f&lRECIPE &7» &e%{_%{_rsn}%}%" to {_p}
+					format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 13, 14, 15, 16, 17, 18, 22, 23, 25, 26, 27, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, and 44 of {_p} with light gray stained glass pane named "&7"
+					format gui slot 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with white stained glass pane named "&7"
+					format gui slot 53 of {_p} with barrier named "&4Back To Menu" to run:
+						menu(player)
+					format gui slot 10 of {_p} with {recipe::%{_%{_rsn}%}%::slot1}
+					format gui slot 11 of {_p} with {recipe::%{_%{_rsn}%}%::slot2}
+					format gui slot 12 of {_p} with {recipe::%{_%{_rsn}%}%::slot3}
+					format gui slot 19 of {_p} with {recipe::%{_%{_rsn}%}%::slot4}
+					format gui slot 20 of {_p} with {recipe::%{_%{_rsn}%}%::slot5}
+					format gui slot 21 of {_p} with {recipe::%{_%{_rsn}%}%::slot6}
+					format gui slot 28 of {_p} with {recipe::%{_%{_rsn}%}%::slot7}
+					format gui slot 29 of {_p} with {recipe::%{_%{_rsn}%}%::slot8}
+					format gui slot 30 of {_p} with {recipe::%{_%{_rsn}%}%::slot9}
+					format gui slot 24 of {_p} with {recipe::%{_%{_rsn}%}%::result}
+			else:
+				format gui slot ({_o} - {_v}) + 8 of {_p} with red stained glass pane named "&4Not Unlocked"
+
+function cookingRecipes(p: player, n: number):
+	delete {_s::*}
+	set {_u} to uuid of {_p}
+	play sound "ui.button.click" to {_p}
+	open virtual chest inventory with size 6 named "&c&lCOOK RECIPES &7(&fPage %{_n}%&7)" to {_p}
+	format gui slot (integers between 0 and 53) of {_p} with black stained glass pane named "&1"
+	format gui slot ((integers between 0 and 9), 17, 18, 26, 27, 35, 36, and (integers between 44 and 53)) of {_p} with white stained glass pane named "&f"
+	format gui slot 49 of {_p} with barrier named "&4Back to Menu" to run:
+		menu({_p})
+	if {_n} is 1:
+		format gui slot 47 of {_p} with red concrete named "&f"
+	else:
+		format gui slot 47 of {_p} with arrow named "&fNext Page &8(&7%{_n} + 1%&8)" to run:
+			cookingRecipes({_p}, ({_n} + 1))
+	set {_recipes::*} to indices of {cookingtable::*}
+	if (size of {_recipes::*}) is less than or equal to ({_n} * 28):
+		format gui slot 51 of {_p} with red concrete named "&1"
+	else:
+		format gui slot 51 of {_p} with arrow named "&4Previous Page &8(&7%{_n} - 1%&8)" to run:
+			cookingRecipes({_p}, ({_n} - 1))
+	set {_nu} to 9
+	set {_r} to 0
+	loop indices of {cookingtable::*}:
+		set {_l} to loop-value
+		add 1 to {_r}
+		if {_r} is greater than (({_n} - 1) * 28):
+			set {_m} to {_r} - (({_n} - 1) * 28)
+			if {_m} is 8, 15, or 22:
+				add 2 to {_nu}
+			if {cookingskilllevel::%{_u}%} is greater than or equal to {cookingtable::%{_l}%::level}:
+				set {_i} to {cookingtable::%{_l}%::result}
+				set {_line} to 0
+				delete {_lll}
+				while {_lll} is not set:
+					if line ({_line} + 1) of {_i}'s lore is set:
+						add 1 to {_line}
+					else:
+						set {_lll} to "URMOM"
+				set line ({_line} + 1) of {_i}'s lore to "&8"
+				set line ({_line} + 2) of {_i}'s lore to "&8-----------"
+				set line ({_line} + 3) of {_i}'s lore to "&8"
+				set line ({_line} + 4) of {_i}'s lore to "&f&lREQUIREMENT:"
+				set line ({_line} + 5) of {_i}'s lore to "&7Cooking Level &c%{cookingtable::%{_l}%::level}%"
+				set line ({_line} + 6) of {_i}'s lore to "&8"
+				set line ({_line} + 7) of {_i}'s lore to "&a&lUNLOCKED"
+				set {_hehe} to {_nu} + {_m}
+				set {_s::%{_hehe}%} to {_l}
+			else:
+				set {_i} to red stained glass pane named "&4???"
+				set {_line} to 0
+				delete {_lll}
+				while {_lll} is not set:
+					if line ({_line} + 1) of {_i}'s lore is set:
+						add 1 to {_line}
+					else:
+						set {_lll} to "URMOM"
+				set line ({_line} + 1) of {_i}'s lore to "&8"
+				set line ({_line} + 2) of {_i}'s lore to "&8-----------"
+				set line ({_line} + 3) of {_i}'s lore to "&8"
+				set line ({_line} + 4) of {_i}'s lore to "&f&lREQUIREMENT:"
+				set line ({_line} + 5) of {_i}'s lore to "&7Cooking Level &c%{cookingtable::%{_l}%::level}%"
+				set line ({_line} + 6) of {_i}'s lore to "&8"
+				set line ({_line} + 7) of {_i}'s lore to "&4&lLOCKED"
+				set {_hehe} to {_nu} + {_m}
+			format gui slot ({_hehe}) of {_p} with {_i} to run:
+				if {_s::%clicked slot%} is set:
+					play sound "entity.chicken.egg" to {_p}
+					open virtual chest inventory with size 6 named "&f&lCOOK RECIPE &f(&7%{_s::%clicked slot%}%&f)" to {_p}
+					format gui slot (integers between 45 and 53) of {_p} with lime stained glass pane named "&1"
+					format gui slot 49 of {_p} with barrier named "&4Back to Recipes" to run:
+						cookingRecipes({_p}, 1)
+					format gui slot 33 of {_p} with black stained glass pane named "&1"
+					format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 13, 17, 18, 22, 23, 24, 25, 26, 27, 31, 32, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, and 44 of {_p} with light gray stained glass pane named "&1"
+					set {_a} to 9
+					loop 9 times:
+						if loop-number is 4 or 7:
+							add 6 to {_a}
+						format gui slot (loop-number + {_a}) of player with {cookingtable::%{_s::%clicked slot%}%::slot%loop-number%}
+					loop 3 times:
+						if {cookingtable::%{_s::%clicked slot%}%::tool%loop-number%} is set:
+							format gui slot (13 + loop-number) of player with {cookingtable::%{_s::%clicked slot%}%::tool%loop-number%}
+					format gui slot 33 of player with {cookingtable::%{_s::%clicked slot%}%::result}
+
+command /collection <text> <text>:
+	permission: collection.command
+	permission message: &9HEHEHEHEHEHEH
+	trigger:
+		if arg-1 is "add":
+			if arg-2 is "agriculture" or "culinary" or "mining" or "nature" or "fishing" or "animal" or "monster" or "magic" or "gear" or "miscellaneous":
+				if {order.%arg-2%} is not set:
+					set {order.%arg-2%} to 0
+				if {order.%arg-2%} is 28:
+					send "&c&lBubRPG: &bThe %arg-2% collection is full! Remove some items to add new ones!"
+				else:
+					add 1 to {order.%arg-2%}
+					set {%arg-2%.collection%{order.%arg-2%}%} to player's held item
+					set {collectionitems::%arg-2%.collection%{order.%arg-2%}%} to {%arg-2%.collection%{order.%arg-2%}%}
+					send "&c&lBubRPG: &b%arg-2% collection %{order.%arg-2%}% is now set!"
+			else:
+				send "&c&lBubRPG: &bNot a valid collection type!"
+		if arg-1 is "remove":
+			if arg-2 is "agriculture" or "culinary" or "mining" or "nature" or "fishing" or "animal" or "monster" or "magic" or "gear" or "miscellaneous":
+				if {order.%arg-2%} is not set:
+					send "&c&lBubRPG: &bThere are no collection items to remove!"
+				else if {order.%arg-2%} is 0:
+					send "&c&lBubRPG: &bThere are no collection items to remove!"
+				else:
+					delete {collectionitems::%arg-2%.collection%{order.%arg-2%}%}
+					delete {%arg-2%.collection%{order.%arg-2%}%}
+					delete {pickupof%arg-2%collection%{order.%arg-2%}%::*}
+					send "&c&lBubRPG: &bAn element from the %arg-2% collection (element %{order.%arg-2%}%) has been removed!"
+					subtract 1 from {order.%arg-2%}
+			else:
+				send "&c&lBubRPG: &bNot a valid collection type!"
