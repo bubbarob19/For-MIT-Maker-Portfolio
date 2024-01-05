@@ -5,7 +5,7 @@ Sadly, I cannot show you much code from the server I am currently working on, as
 
 ## Skripts
 
-Skripts are how I used to code my old servers before I got into Java! I placed many of my old skripts in this repository for you to view.
+Skripts are how I used to code my old servers before I got into Java! I placed many of my old skripts in this repository for you to view. I separated the skripts into folders based on which server they were with, and added a small description of the server / any relevant insights. I did not add all of the skripts I wrote to these folders, just a few relevant and interesting ones.
 
 ## Java
 
