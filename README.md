@@ -1,4 +1,4 @@
-# MIT Maker Portfolio Extra Information:
+# MIT Maker Portfolio:
 Hello there! I made this repository specifically to share some old code and extra links that you might find useful! This is just a small collection of some of the things I have done with my Minecraft servers over the past 4 years.
 
 Sadly, I cannot show you much code from the server I am currently working on, as we keep all of that private. We do this because players can look at public code and search for exploits to break the server. However, I have plenty of code from old servers and some code from my newest project that shouldn't cause any major exploits if viewed by the public. I have worked with other developers on my servers, but any code you see in this repository was made solely by me!
