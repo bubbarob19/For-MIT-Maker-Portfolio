@@ -1,0 +1,299 @@
+#------------------
+#--Auction House---
+#--By: bubbarob19--
+#------------------
+
+#VARIABLES:
+
+#{ah::amount::%player's uuid%} - amount of items player has in auction house
+#{ah::item::%num%::%player's uuid%} - item %num% in auction house
+#{ah::price::%num%::%player's uuid%} - price of item %num% in auction house
+#{ah::listtime::%num%::%player's uuid%} - time when item %num% was listed
+#{ah::expiredtime::%num%::%player's uuid%} - time when item %num% expired
+
+command /auctionhouse [<text>] [<integer>]:
+	permission: skript.ah
+	aliases: /ah
+	trigger:
+		if {staffmode::%player's uuid%} is set:
+			stop
+		if {ah::amount::%player's uuid%} is not set:
+			set {ah::amount::%player's uuid%} to 0
+		if arg-1 is not set:
+			auctionHouse(player, 1)
+		else if arg-1 is "sell":
+			if arg-2 is greater than 0:
+				if player has permission "skript.auctionhouse.titan":
+					if {ah::amount::%player's uuid%} is less than 8:
+						sellAuction(player, arg-2)
+					else:
+						send "&4ERROR: &cYou already have the max amount of items in the auction house &7(8)"
+				else if player has permission "skript.auctionhouse.legend":
+					if {ah::amount::%player's uuid%} is less than 6:
+						sellAuction(player, arg-2)
+					else:
+						send "&4ERROR: &cYou already have the max amount of items in the auction house &7(6). &cUpgrade your max slots by upgrading your rank &b(/buy)"
+				else if player has permission "skript.auctionhouse.vip":
+					if {ah::amount::%player's uuid%} is less than 4:
+						sellAuction(player, arg-2)
+					else:
+						send "&4ERROR: &cYou already have the max amount of items in the auction house &7(4). &cUpgrade your max slots by upgrading your rank &b(/buy)"
+				else:
+					if {ah::amount::%player's uuid%} is less than 2:
+						sellAuction(player, arg-2)
+					else:
+						send "&4ERROR: &cYou already have the max amount of items in the auction house &7(2)&cUpgrade your max slots by upgrading your rank &b(/buy)"
+			else:
+				send "&4ERROR: &fYour price must be a positive number!"
+		else:
+			send "%nl%&3&lBubPVP AUCTION HELP%nl%%nl%&f- &7/ah &8| &7View the auction house%nl%&f- &7/ah sell <amount> &8| &7Put an item on the auction house%nl%"
+
+function sellAuction(p: player, a: number):
+	set {_u} to uuid of {_p}
+	if {_p}'s held item is not air:
+		add 1 to {ah::amount::%{_u}%}
+		set {ah::item::%{ah::amount::%{_u}%}%::%{_u}%} to {_p}'s held item
+		set {ah::price::%{ah::amount::%{_u}%}%::%{_u}%} to {_a}
+		set {ah::listtime::%{ah::amount::%{_u}%}%::%{_u}%} to now
+		set slot ({_p}'s current hotbar slot) of {_p} to air
+		send "&3&lBubPVP: &fYou added an item to the auction house for &3$%{_a}%&3!" to {_p}
+	else:
+		send "&4ERROR: &cYou cannot sell air on the auction house!" to {_p}
+
+function auctionHouse(p: player, n: number):
+	set {_u} to uuid of {_p}
+	play sound "entity.chicken.egg" to {_p}
+	open virtual chest inventory with size 6 named "&8Auction House &7| &8Page &c%{_n}%" to {_p}
+	format gui slot (integers between 0 and 53) of {_p} with light gray stained glass pane named "&1"
+	format gui slot ((integers between 0 and 9), (integers between 44 and 53), 17, 18, 26, 27, 35, and 36) of {_p} with black stained glass pane named "&1"
+	format gui slot 48 of {_p} with diamond named "&3View your current auctions &7(%{ah::amount::%{_u}%}%&7)" to run:
+		viewauctions({_p})
+	format gui slot 50 of {_p} with gold ingot named "&3Collect / View expired items" with lore "&7(1 week before deletion)" to run:
+		viewexpired({_p})
+	if {_n} is 1:
+		format gui slot 46 of {_p} with red concrete named "&1"
+	else:
+		format gui slot 46 of {_p} with arrow named "&7Page &c%{_n} - 1%" to run:
+			auctionHouse({_p}, ({_n} - 1))
+	if ahSize() is less than ({_n} * 28):
+		format gui slot 52 of {_p} with red concrete named "&1"
+	else:
+		format gui slot 52 of {_p} with arrow named "&7Page &c%{_n} + 1%" to run:
+			auctionHouse({_p}, ({_n} + 1))
+	loop indices of {ah::item::*}:
+		loop indices of {ah::item::%loop-value%::*}:
+			add 1 to {_itemnum}
+			if {_itemnum} is greater than ({_n} - 1)  * 28:
+				if {_itemnum} is less than or equal to {_n} * 28:
+					set {_i} to {ah::item::%loop-value-1%::%loop-value-2%}
+					set {_time} to difference between 3 days after {ah::listtime::%loop-value-1%::%loop-value-2%} and now
+					set {_yo mama} to difference between 3 days before {ah::listtime::%loop-value-1%::%loop-value-2%} and now
+					set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 1 ) of {_i}'s lore to "&7"
+					set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 2 ) of {_i}'s lore to "&3------------"
+					set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 3 ) of {_i}'s lore to "&7"
+					set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 4 ) of {_i}'s lore to "&f&lSELLER:"
+					set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 5 ) of {_i}'s lore to "&8¬ &f%loop-value-2 parsed as an offline player%"
+					set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 6 ) of {_i}'s lore to "&7"
+					set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 7 ) of {_i}'s lore to "&a&lCOST:"
+					set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 8 ) of {_i}'s lore to "&8¬ &a$%{ah::price::%loop-value-1%::%loop-value-2%}%"
+					set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 9 ) of {_i}'s lore to "&7"
+					set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 10 ) of {_i}'s lore to "&f&lTIME LEFT:"
+					set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 11 ) of {_i}'s lore to "&8¬ &f%{_time}%"
+					set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 12 ) of {_i}'s lore to "&7"
+					if loop-value-2 parsed as a player is {_p}:
+						set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 13 ) of {_i}'s lore to "&c&lCLICK TO REMOVE AUCTION"
+					else:
+						set line ( getLoreLines({ah::item::%loop-value-1%::%loop-value-2%}) + 13 ) of {_i}'s lore to "&a&lCLICK TO PURCHASE"
+					set {_clickslotnum} to getClickFromSlot({_itemnum} - (({_n} - 1) * 28))
+					set {_%{_clickslotnum}%::item} to {ah::item::%loop-value-1%::%loop-value-2%}
+					set {_%{_clickslotnum}%::price} to {ah::price::%loop-value-1%::%loop-value-2%}
+					set {_%{_clickslotnum}%::number} to loop-value-1
+					format gui slot {_clickslotnum} of {_p} with {_i} to run:
+						if line getLoreLines(event-item) of event-item's lore is "&c&lCLICK TO REMOVE AUCTION":
+							removeFromAuction({_p}, ({_%clicked slot%::number} parsed as a number), true)
+						else if line getLoreLines(event-item) of event-item's lore is "&a&lCLICK TO PURCHASE":
+							if {balance::%{_u}%} is greater than or equal to {_%clicked slot%::price}:
+								if {_p} can hold (item amount of {_%clicked slot%::item}) of {_%clicked slot%::item}:
+									give {_p} (item amount of {_%clicked slot%::item}) of {_%clicked slot%::item}
+									subtract {_%clicked slot%::price} from {balance::%{_u}%}
+									play sound "entity.arrow.hit_player" to {_p}
+									set {_boughtfrom} to line ( getLoreLines({_%clicked slot%::item}) + 5 ) of event-item's lore
+									replace all "&8¬ &f" in {_boughtfrom} with ""
+									set {_boughtfrom} to {_boughtfrom} parsed as an offline player
+									play sound "entity.arrow.hit_player" to {_boughtfrom}
+									send "&3&lBubPVP: &fYou bought &3%{_boughtfrom}%&3's &fauction for &3$%{_%clicked slot%::price}%&3!" to {_p}
+									send "&3&lBubPVP: &fYour auction was bought by &3%{_p}% &ffor &3$%{_%clicked slot%::price}%&3!" to {_boughtfrom}
+									set {_ub} to uuid of {_boughtfrom}
+									add {_%clicked slot%::price} to {balance::%{_ub}%}
+									removeFromAuction({_boughtfrom}, ({_%{_clickslotnum}%::number} parsed as a number), false)
+								else:
+									send "&4ERROR: &cYou do not have enough inventory space!" to {_p}
+							else:
+								send "&4ERROR: &cYou don't have enough money to buy this!" to {_p}
+				else:
+					stop loop
+
+command /testah:
+	permission: op
+	trigger:
+		send "%ahSize()%" to player
+
+function removeFromAuction(p: offline player, nu: number, b: boolean):
+	set {_u} to uuid of {_p}
+	if {_b} is true:
+		if size of {ah::expiredtime::%{_u}%::*} is less than 28:
+			add now to {ah::expiredtime::%{_u}%::*}
+			add {ah::item::%{_nu}%::%{_u}%} to {ah::expireditem::%{_u}%::*}
+			send "&3&lBubPVP: &fYour auction was removed from the auction house! Claim the item in the &3expired tab. &fIt will disappear after 1 week!" to {_p}
+		else:
+			send "&3&lBubPVP: &fOh no! Your expired tab is full! You lost your auction item forever!" to {_p}
+	delete {ah::item::%{_nu}%::%{_u}%}
+	delete {ah::price::%{_nu}%::%{_u}%}
+	delete {ah::listtime::%{_nu}%::%{_u}%}
+	remove 1 from {ah::amount::%{_u}%}
+	set {_num} to 1
+	loop 8 times:
+		if {ah::item::%9 - loop-number%::%{_u}%} is set:
+			loop (8 - loop-number) times:
+				if {ah::item::%loop-number-2%::%{_u}%} is not set:
+					set {ah::item::%loop-number-2%::%{_u}%} to {ah::item::%9 - loop-number-1%::%{_u}%}
+					set {ah::price::%loop-number-2%::%{_u}%} to {ah::price::%9 - loop-number-1%::%{_u}%}
+					set {ah::listtime::%loop-number-2%::%{_u}%} to {ah::listtime::%9 - loop-number-1%::%{_u}%}
+					delete {ah::item::%9 - loop-number-1%::%{_u}%}
+					delete {ah::price::%9 - loop-number-1%::%{_u}%}
+					delete {ah::listtime::%9 - loop-number-1%::%{_u}%}
+	loop all players:
+		if name of loop-player's current inventory contains "&8Auction House &7| &8Page &c":
+			set {_name} to name of loop-player's current inventory
+			replace all "&8Auction House &7| &8Page &c" in {_name} with ""
+			set {_page} to {_name} parsed as a number
+			auctionHouse(loop-player, {_page})
+	if name of {_p}'s current inventory is "&8View your auctions":
+		viewauctions({_p})
+
+command /resetauction:
+	permission: op
+	permission message: &cYou are not permitted to perform this commmand!
+	trigger:
+		loop indices of {ah::*}:
+			loop indices of {ah::%loop-value%::*}:
+				delete {ah::%loop-value-1%::%loop-value-2%::*}
+			delete {ah::%loop-value%::*}
+		delete {ah::*}
+		send "&3&lBubPVP: &fYou reset the auction!" to player
+
+function ahSize() :: number:
+	set {_n} to 0
+	loop indices of {ah::item::*}:
+		loop {ah::item::%loop-value%::*}:
+			add 1 to {_n}
+	return {_n}
+
+function getLoreLines(i: item) :: number:
+	set {_n} to 0
+	while {_test} is not set:
+		add 1 to {_n}
+		if line {_n} of {_i}'s lore is not set:
+			set {_test} to true
+	return ({_n} - 1)
+
+function getClickFromSlot(n: number) :: number:
+	set {_num} to 0
+	if {_n} is 1 or 2 or 3 or 4 or 5 or 6 or 7:
+		set {_num} to {_n} + 9
+	else if {_n} is 8 or 9 or 10 or 11 or 12 or 13 or 14:
+		set {_num} to {_n} + 11
+	else if {_n} is 15 or 16 or 17 or 18 or 19 or 20 or 21:
+		set {_num} to {_n} + 13
+	else if {_n} is 22 or 23 or 24 or 25 or 26 or 27 or 28:
+		set {_num} to {_n} + 15
+	return {_num}
+
+function getSlotFromClick(n: number) :: number:
+	set {_num} to 0
+	if {_n} is 10 or 11 or 12 or 13 or 14 or 15 or 16:
+		set {_num} to {_n} - 9
+	else if {_n} is 19 or 20 or 21 or 22 or 23 or 24 or 25:
+		set {_num} to {_n} - 11
+	else if {_n} is 28 or 29 or 30 or 31 or 32 or 33 or 34:
+		set {_num} to {_n} - 13
+	else if {_n} is 37 or 38 or 39 or 40 or 41 or 42 or 43:
+		set {_num} to {_n} - 15
+	return {_num}
+
+function viewexpired(p: player):
+	set {_u} to uuid of {_p}
+	play sound "entity.chicken.egg" to {_p}
+	open virtual chest inventory with size 6 named "&8View expired auction items" to {_p}
+	format gui slot (integers between 0 and 53) of {_p} with light gray stained glass pane named "&1"
+	format gui slot ((integers between 0 and 9), (integers between 44 and 53), 17, 18, 26, 27, 35, and 36) of {_p} with black stained glass pane named "&1"
+	format gui slot 49 of {_p} with barrier named "&4Back" to run:
+		auctionHouse({_p}, 1)
+	set {_n} to 0
+	loop {ah::expireditem::%{_u}%::*}:
+		set {_time} to difference between 7 days after {ah::expiredtime::%{_u}%::%loop-index%} and now
+		set {_yo mama} to difference between 7 days before {ah::expiredtime::%{_u}%::%loop-index%} and now
+		add 1 to {_n}
+		set {_i} to loop-value
+		set line ( getLoreLines({ah::expireditem::%{_u}%::%loop-index%}) + 1 ) of {_i}'s lore to "&7"
+		set line ( getLoreLines({ah::expireditem::%{_u}%::%loop-index%}) + 2 ) of {_i}'s lore to "&3------------"
+		set line ( getLoreLines({ah::expireditem::%{_u}%::%loop-index%}) + 3 ) of {_i}'s lore to "&7"
+		set line ( getLoreLines({ah::expireditem::%{_u}%::%loop-index%}) + 4 ) of {_i}'s lore to "&f&lTIME LEFT:"
+		set line ( getLoreLines({ah::expireditem::%{_u}%::%loop-index%}) + 5 ) of {_i}'s lore to "&8¬ &f%{_time}%"
+		set {_get} to getClickFromSlot({_n})
+		set {_%{_get}%::item} to {ah::expireditem::%{_u}%::%loop-index%}
+		set {_%{_get}%::num} to loop-index parsed as a number
+		format gui slot getClickFromSlot({_n}) of {_p} with {_i} to run:
+			removeExpired({_p}, {_%clicked slot%::num})
+
+function removeExpired(p: player, n: number):
+	set {_u} to uuid of {_p}
+	if {_p} can hold (item amount of {ah::expireditem::%{_u}%::%{_n}%}) of {ah::expireditem::%{_u}%::%{_n}%}:
+		give {_p} (item amount of {ah::expireditem::%{_u}%::%{_n}%}) of {ah::expireditem::%{_u}%::%{_n}%}
+		send "&3&lBubPVP: &fYou successfully claimed an expired item!" to {_p}
+		delete {ah::expiredtime::%{_u}%::%{_n}%}
+		delete {ah::expireditem::%{_u}%::%{_n}%}
+		play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+		if name of {_p}'s current inventory is "&8View expired auction items":
+			viewexpired({_p})
+	else:
+		send "&4ERROR: &cYou don't have enough inventory space to claim this!" to {_p}
+
+function viewauctions(p: player):
+	set {_u} to uuid of {_p}
+	play sound "entity.chicken.egg" to {_p}
+	open virtual chest inventory with size 4 named "&8View your auctions" to {_p}
+	format gui slot (integers between 0 and 35) of {_p} with light gray stained glass pane named "&1"
+	format gui slot ((integers between 0 and 9), (integers between 26 and 35), 17, and 18) of {_p} with black stained glass pane named "&1"
+	format gui slot 31 of {_p} with barrier named "&4Back" to run:
+		auctionHouse({_p}, 1)
+	loop 8 times:
+		if {ah::item::%loop-number%::%{_u}%} is set:
+			set {_time} to difference between 3 days after {ah::listtime::%loop-number%::%{_u}%} and now
+			set {_yo mama} to difference between 3 days before {ah::listtime::%loop-number%::%{_u}%} and now
+			set {_i} to {ah::item::%loop-number%::%{_u}%}
+			set line ( getLoreLines({ah::item::%loop-number%::%{_u}%}) + 1 ) of {_i}'s lore to "&7"
+			set line ( getLoreLines({ah::item::%loop-number%::%{_u}%}) + 2 ) of {_i}'s lore to "&3------------"
+			set line ( getLoreLines({ah::item::%loop-number%::%{_u}%}) + 3 ) of {_i}'s lore to "&7"
+			set line ( getLoreLines({ah::item::%loop-number%::%{_u}%}) + 4 ) of {_i}'s lore to "&a&lCOST:"
+			set line ( getLoreLines({ah::item::%loop-number%::%{_u}%}) + 5 ) of {_i}'s lore to "&8¬ &a$%{ah::price::%loop-number%::%{_u}%}%"
+			set line ( getLoreLines({ah::item::%loop-number%::%{_u}%}) + 6 ) of {_i}'s lore to "&7"
+			set line ( getLoreLines({ah::item::%loop-number%::%{_u}%}) + 7 ) of {_i}'s lore to "&f&lTIME LEFT:"
+			set line ( getLoreLines({ah::item::%loop-number%::%{_u}%}) + 8 ) of {_i}'s lore to "&8¬ &f%{_time}%"
+			set line ( getLoreLines({ah::item::%loop-number%::%{_u}%}) + 9 ) of {_i}'s lore to "&7"
+			set line ( getLoreLines({ah::item::%loop-number%::%{_u}%}) + 10 ) of {_i}'s lore to "&c&lCLICK TO REMOVE AUCTION"
+			format gui slot getClickFromSlot(loop-number) of {_p} with {_i} to run:
+				set {_c} to getSlotFromClick(clicked slot)
+				removeFromAuction({_p}, {_c}, true)
+
+every 5 seconds:
+	loop indices of {ah::listtime::*}:
+		loop indices of {ah::listtime::%loop-value%::*}:
+			if (difference between now and {ah::listtime::%loop-value-1%::%loop-value-2%}) is greater than 3 days:
+				removeFromAuction(loop-value-2 parsed as an offline player, loop-value-1 parsed as a number, true)
+	loop indices of {ah::expiredtime::*}:
+		loop indices of {ah::expiredtime::%loop-value%::*}:
+			if (difference between now and {ah::expiredtime::%loop-value-1%::%loop-value-2%}) is greater than 7 days:
+				delete {ah::expiredtime::%loop-value-1%::%loop-value-2%}
+				delete {ah::expireditem::%loop-value-1%::%loop-value-2%}
+				send "&3&lBubPVP: &fOh no! An expired item of yours disappeared forever! To prevent this next time, make sure to collect your expired auction items!" to loop-value-1 parsed as a player
