@@ -1,0 +1,462 @@
+#GENS.SK
+
+#VARIABLES
+# {generator::limit::*} - gen limit
+# {generator::block::*} - block
+# {generator::item::*} - item
+# {generator::value::*} - sell value
+# {generator::cost::*} - upgrade cost (or buy)
+# {-generator::placed::%{_u}%::*} - list of player's gens
+# {-generator::placedgenitem::%{_u}%::*} - list of genned items
+
+#OPTIONS
+
+options:
+	prefix: &b&lABUNDANT &8•
+	pm: &4No permission.
+
+#MONGODB
+
+on load:
+	set {server} to mongo server with connection string "mongodb+srv://bubbarob19:WFa9Sn3lO6UFtgTW@gens.seqwl.mongodb.net/gens?retryWrites=true&w=majority"
+	set {database} to mongo database named "gens" of {server}
+	set {gen-collection} to mongo collection named "gens" of {database}
+	set {hopper-collection} to mongo collection named "hoppers" of {database}
+
+function mongoDB_loadPlayerData(p: player):
+	set {_u} to uuid of {_p}
+	loop all mongo documents with mongosk filter where field "uuid" is {_u} of collection {gen-collection}:
+		set {_id} to mongo value "id" of loop-value
+		set {_location} to mongo value "location" of loop-value
+		set {_gentype} to mongo value "gentype" of loop-value
+		set {_blockdata} to mongo value "blockdata" of loop-value
+		set block at {_location} to ({_blockdata} parsed as blockdata)
+		set {-generator::placed::%{_u}%::%{_id}%} to block at {_location}
+		set {-generator::placedgentype::%{_u}%::%{_id}%} to {_gentype}
+	loop all mongo documents with mongosk filter where field "uuid" is {_u} of collection {hopper-collection}:
+		set {_id} to mongo value "id" of loop-value
+		set {_location} to mongo value "location" of loop-value
+		set block at {_location} to a hopper
+		set {-hopper::placed::%{_u}%::%{_id}%} to block at {_location}
+
+#function mongoDB_savePlayerData(p: player):
+#	set {_u} to uuid of {_p}
+#	if {-generator::placed::%{_u}%::*} is set:
+#		loop all mongo documents of collection {gen-collection}:
+#			if mongo value "uuid" of loop-value is {_u}:
+#				set mongo value "block" of loop-value to {-generator::placed::%{_u}%::%{_id}%}
+#				set mongo value "gentype" of loop-value to {-generator::placedgentype::%{_u}%::%{_id}%}
+#			update mongo document loop-value of collection {gen-collection}
+#	loop all mongo documents with mongosk filter where field "uuid" is {_u} of collection {hopper-collection}:
+#		set mongo value "block" of loop-value to {-generator::placed::%{_u}%::%{_id}%}
+#	broadcast "playerdata saved"
+
+function mongoDB_deletePlayerData(p: offlineplayer):
+	set {_u} to uuid of {_p}
+	set {_players::*} to all players
+	if {_players::*} contains {_p}:
+		stop
+	else:
+		delete {-generator::placed::%{_u}%::*}
+		delete {-generator::placedgentype::%{_u}%::*}
+		delete {-hopper::placed::%{_u}%::*}
+
+#COMMANDS
+
+command /gen [<text>] [<text>]:
+	permission: skript.gen
+	permission message: {@pm}
+	trigger:
+		if arg-1 is "create":
+			genCreatePart1(player)
+		else if arg-1 is "delete":
+			if arg-2 is set:
+				if arg-2 parsed as an integer is between 1 and 28:
+					if {generator::block::%arg-2%} is set:
+						broadcast "{@prefix} &7The generator &f%name of {generator::block::%arg-2%}% &7was successfully deleted!"
+						deleteGen(arg-2)
+						play sound "block.note_block.pling" at pitch 0 to all players
+					else:
+						error(player, "This generator is not set!")
+				else:
+					error(player, "The gens range from numbers 1 to 28!")
+			else:
+				deleteGenMenu(player)
+		else if arg-1 is "resetallplayer":
+			resetAllPlayerGens()
+			broadcast "{@prefix} &7All player generators were successfully removed!"
+			play sound "block.note_block.pling" at pitch 0 to all players
+		else if arg-1 is "resetplayer":
+			if {player::*} contains arg-2 parsed as an offline player:
+				resetPlayerGens(arg-2 parsed as an offline player)
+				send "{@prefix} &7All of your gens were reset!" to arg-2 parsed as a player
+				send "{@prefix} &7You reset all of &f%arg-2 parsed as an offline player%&f's &7gens!" to player
+				play sound "block.note_block.pling" at pitch 0 to player
+				play sound "block.note_block.pling" at pitch 0 to arg-2 parsed as a player
+			else:
+				error(player, "This player has not yet joined this season!")
+		else if arg-1 is "wipe":
+			resetAllPlayerGens()
+			loop {generator::block::*}:
+				deleteGen(loop-index)
+			broadcast "{@prefix} &7All gens have been completely wiped!"
+			play sound "block.note_block.pling" at pitch 0 to all players
+		else if arg-1 is "info":
+			if arg-2 is set:
+				if arg-2 parsed as an integer is between 1 and 28:
+					if {generator::block::%arg-2%} is set:
+						send "%nl%&b&lGENERATOR INFO:%nl%%nl%&fName: &b%displayname of {generator::block::%arg-2%}%%nl%&fItem Worth: &b$%formatmoney({generator::value::%arg-2%})%%nl%&fCost: &b$%formatmoney({generator::cost::%arg-2%})%%nl%"
+						play sound "entity.arrow.hit_player" at pitch 2 to player
+					else:
+						error(player, "This generator is not set!")
+				else:
+					error(player, "The gens range from numbers 1 to 28!")
+			else:
+				genList(player)
+		else:
+			play sound "entity.arrow.hit_player" at pitch 2 to player
+			send "%nl%&b&lGENS COMMAND%nl%%nl%&8• &b/gen create &8| &fCreate a gen%nl%&8• &b/gen delete [<number>] &8| &fDelete a gen%nl%&8• &b/gen resetallplayer &8| &fReset all player gens%nl%&8• &b/gen resetplayer [<player>] &8| &fReset a player's gens%nl%&8• &b/gen wipe &8| &fWipe all gen data%nl%&8• &b/gen info [<number>] &8| &fGet gen info%nl%&8• &b/gen help &8| &fSee this message%nl%"
+
+command /genlist:
+	trigger:
+		genList(player)
+
+#FUNCTIONS
+
+function genList(p: player):
+	create a gui with virtual chest inventory with size 6 named "Generator List":
+		make gui slot (integers between 0 and 53) with light gray stained glass pane named "&1"
+		make gui slot ((integers between 0 and 9), 17, 18, 26, 27, 35, 36, and (integers between 44 and 53)) with black stained glass pane named "&1"
+		loop 28 times:
+			if {generator::block::%loop-number%} is set:
+				set {_i} to {generator::block::%loop-number%}
+				set line ( getLoreLines({_i}) + 1 ) of {_i}'s lore to "&fItem Value: &b$%formatmoney({generator::value::%loop-number%})%"
+				set line ( getLoreLines({_i}) + 1 ) of {_i}'s lore to "&fCost: &b$%formatmoney({generator::cost::%loop-number%})%"
+				make gui slot getClickFromNum28(loop-number) with {_i}
+	play sound "entity.chicken.egg" at pitch 0 to {_p}
+	open the last gui to {_p}
+
+function genCreatePart1(p: player):
+	play sound "entity.chicken.egg" at pitch 0 to {_p}
+	create a gui with virtual chest inventory with size 5 named "Create Gen":
+		make gui slot (integers between 0 and 35) with gray stained glass pane named "&1"
+		make gui slot 11 and 15 with moveable air
+		make gui slot (integers between 36 and 44) with black stained glass pane named "&1"
+		make gui slot 20 with paper named "&fInsert Generator Here"
+		make gui slot 24 with paper named "&fInsert Gen Item Here"
+		make gui slot 40 with lime concrete named "&a&lCONFIRM" with lore "&7Click this button" and "&7to create your gen":
+			if slot 11 of {_p}'s current inventory is not air:
+				if slot 15 of {_p}'s current inventory is not air:
+					if slot 11 of {_p}'s current inventory is a block:
+						genCreatePart2({_p}, slot 11 of {_p}'s current inventory, slot 15 of {_p}'s current inventory)
+					else:
+						error({_p}, "Your generator must be a block!")  
+				else:
+					error({_p}, "Your generator cannot be air!")
+			else:
+				error({_p}, "Your generator cannot be air!")
+	open the last gui to {_p}
+
+function genCreatePart2(p: player, gen: item, genitem: item):
+	play sound "entity.arrow.hit_player" to {_p}
+	create a gui with virtual chest inventory with size 6 named "Choose Gen Number":
+		make gui slot (integers between 0 and 53) with black stained glass pane named "&1"
+		loop 28 times:
+			if {generator::block::%loop-number%} is set:
+				set {_name} to name of {generator::block::%loop-number%}
+				set {_i} to {generator::block::%loop-number%}
+				set name of {_i} to "&b&lGENERATOR &f##&l%loop-number% &8| &f%{_name}%"
+				set line ( getLoreLines({generator::%loop-number%::block}) + 1 ) of {_i}'s lore to "&7"
+				set line ( getLoreLines({generator::%loop-number%::block}) + 2 ) of {_i}'s lore to "&7-----------"
+				set line ( getLoreLines({generator::%loop-number%::block}) + 3 ) of {_i}'s lore to "&7"
+				set line ( getLoreLines({generator::%loop-number%::block}) + 4 ) of {_i}'s lore to "&7Click to &c&lDELETE &7this gen."
+				make gui slot getClickFromNum28(loop-number) with {_i}:
+					deleteGen("%getNumFromClick28(clicked slot)%")
+					genCreatePart2({_p}, {_gen}, {_genitem})
+			else:
+				make gui slot getClickFromNum28(loop-number) with paper named "&b&lGEN &f##&l%loop-number%" with lore "&8", "&7Click here to set" and "&7this gen to &f##%loop-number%&f!":
+					genCreatePart3({_p}, {_gen}, {_genitem}, (getNumFromClick28(clicked slot)))
+	open the last gui to {_p}
+
+function genCreatePart3(p: player, gen: item, genitem: item, n: number):
+	set {_u} to uuid of {_p}
+	set {gsv::%{_u}%} to 1
+	play sound "entity.arrow.hit_player" to {_p}
+	create a gui with virtual chest inventory with size 6 named "Set Gen Item Value":
+		make gui slot (integers between 0 and 53) with black stained glass pane named "&1"
+		make gui slot 49 with paper named "&a&lCONTINUE" with lore "&7", "&7(Click here to confirm)", "&7" and "&f&lCURRENT VALUE: &a$%formatmoneycommas({gsv::%{_u}%})%":
+			genCreatePart4({_p}, {_gen}, {_genitem}, {_n}, {gsv::%{_u}%})
+		loop 7 times:
+			make gui slot (loop-number + 9) with lime concrete named "&a+ $%formatmoney(10^((loop-number - 1)*2))%":
+				add (10^((clicked slot - 10)*2)) to {gsv::%{_u}%}    
+				make gui slot 49 with paper named "&a&lCONTINUE" with lore "&7", "&7(Click here to confirm)", "&7" and "&f&lCURRENT VALUE: &a$%formatmoneycommas({gsv::%{_u}%})%":
+					genCreatePart4({_p}, {_gen}, {_genitem}, {_n}, {gsv::%{_u}%})
+		loop 7 times:
+			make gui slot (loop-number + 27) with red concrete named "&c- $%formatmoney(10^((loop-number - 1)*2))%":
+				if {gsv::%{_u}%} is greater than (10^((clicked slot - 28)*2)):
+					subtract (10^((clicked slot - 28)*2)) from {gsv::%{_u}%}    
+					make gui slot 49 with paper named "&a&lCONTINUE" with lore "&7", "&7(Click here to confirm)", "&7" and "&f&lCURRENT VALUE: &a$%formatmoneycommas({gsv::%{_u}%})%":
+						genCreatePart4({_p}, {_gen}, {_genitem}, {_n}, {gsv::%{_u}%})
+				else:
+					error({_p}, "The value of the item must be greater than 0!")
+		run on gui close:
+			delete {gsv::%{_u}%}
+	open the last gui to {_p}
+
+function genCreatePart4(p: player, gen: item, genitem: item, n: number, value: number):
+	set {_u} to uuid of {_p}
+	set {gsv::%{_u}%} to 1
+	play sound "entity.arrow.hit_player" to {_p}
+	if {_n} is 1:
+		set {_txt} to "Set Cost of Gen"
+	else:
+		set {_txt} to "Set Upgrade Cost of Gen"
+	create a gui with virtual chest inventory with size 6 named {_txt}:
+		make gui slot (integers between 0 and 53) with black stained glass pane named "&1"
+		make gui slot 49 with paper named "&a&lCREATE GENERATOR" with lore "&7", "&7(Click here to confirm)", "&7" and "&f&lCURRENT COST: &a$%formatmoneycommas({gsv::%{_u}%})%":
+			genCreatePart5({_p}, {_gen}, {_genitem}, {_n}, {_value}, {gsv::%{_u}%})
+		loop 7 times:
+			make gui slot (loop-number + 9) with lime concrete named "&a+ $%formatmoney(10^((loop-number - 1)*2))%":
+				add (10^((clicked slot - 10)*2)) to {gsv::%{_u}%}    
+				make gui slot 49 with paper named "&a&lCREATE GENERATOR" with lore "&7", "&7(Click here to confirm)", "&7" and "&f&lCURRENT COST: &a$%formatmoneycommas({gsv::%{_u}%})%":
+					genCreatePart5({_p}, {_gen}, {_genitem}, {_n}, {_value}, {gsv::%{_u}%})
+		loop 7 times:
+			make gui slot (loop-number + 27) with red concrete named "&c- $%formatmoney(10^((loop-number - 1)*2))%":
+				if {gsv::%{_u}%} is greater than (10^((clicked slot - 28)*2)):
+					subtract (10^((clicked slot - 28)*2)) from {gsv::%{_u}%}    
+					make gui slot 49 with paper named "&a&lCREATE GENERATOR" with lore "&7", "&7(Click here to confirm)", "&7" and "&f&lCURRENT COST: &a$%formatmoneycommas({gsv::%{_u}%})%":
+						genCreatePart5({_p}, {_gen}, {_genitem}, {_n}, {_value}, {gsv::%{_u}%})
+				else:
+					error({_p}, "The value of the item must be greater than 0!")
+		run on gui close:
+			delete {gsv::%{_u}%}
+	open the last gui to {_p}
+
+function genCreatePart5(p: player, gen: item, genitem: item, n: number, value: number, uc: number):
+	set {_u} to uuid of {_p}
+	delete {gsv::%{_u}%}
+	close {_p}'s inventory
+	play sound "entity.arrow.hit_player" to {_p}
+	send "{@prefix} &7You successfully set &b&lGEN &f##%{_n}%&7, and gave the genned item a value of &a$%formatmoney({_value})%&a!" to {_p}
+	set {generator::block::%{_n}%} to {_gen}
+	set {generator::item::%{_n}%} to {_genitem} 
+	set {generator::value::%{_n}%} to {_value}
+	set {generator::cost::%{_n}%} to {_uc}
+
+function deleteGenMenu(p: player):
+	play sound "entity.chicken.egg" at pitch 0 to {_p}
+	create a gui with virtual chest inventory with size 6 named "Choose Gen Number":
+		make gui slot (integers between 0 and 53) with black stained glass pane named "&1"
+		loop 28 times:
+			if {generator::block::%loop-number%} is set:
+				set {_name} to name of {generator::block::%loop-number%}
+				set {_i} to {generator::block::%loop-number%}
+				set name of {_i} to "&b&lGENERATOR &f##&l%loop-number% &8| &f%{_name}%"
+				set line ( getLoreLines({generator::%loop-number%::block}) + 1 ) of {_i}'s lore to "&7"
+				set line ( getLoreLines({generator::%loop-number%::block}) + 2 ) of {_i}'s lore to "&7-----------"
+				set line ( getLoreLines({generator::%loop-number%::block}) + 3 ) of {_i}'s lore to "&7"
+				set line ( getLoreLines({generator::%loop-number%::block}) + 4 ) of {_i}'s lore to "&7Click to &c&lDELETE &7this gen."
+				make gui slot getClickFromNum28(loop-number) with {_i}:
+					deleteGen("%getNumFromClick28(clicked slot)%")
+					deleteGenMenu({_p})
+			else:
+				make gui slot getClickFromNum28(loop-number) with paper named "&b&lGEN &f##&l%loop-number% &8| &f&lNOT SET"
+	open the last gui to {_p}
+
+function deleteGen(n: text):
+	loop all mongo documents with mongosk filter where field "gentype" is {generator::block::%{_n}%} of collection {gen-collection}:
+		set {_id} to mongo value "id" of loop-value
+		deletePlayerGen({_id})
+	delete {generator::block::%{_n}%}
+	delete {generator::value::%{_n}%}
+	delete {generator::item::%{_n}%}
+	delete {generator::cost::%{_n}%}
+
+function resetAllPlayerGens():
+	loop all mongo documents of collection {gen-collection}:
+		set {_id} to mongo value "id" of loop-value
+		deletePlayerGen({_id})
+
+function getGenItem(i: item) :: item:
+	loop {generator::block::*}:
+		if {_i} is loop-value:
+			set {_item} to {generator::item::%loop-index%}
+			stop loop
+	return {_item}
+
+function getGenSize(p: offline player) :: number:
+	set {_u} to uuid of {_p}
+	set {_docs::*} to all mongo documents with mongosk filter where field "uuid" is {_u} of collection {gen-collection}
+	return (size of {_docs::*} ? 0)
+
+function getGenNum(i: item) :: number:
+	loop {generator::block::*}:
+		if loop-value is {_i}:
+			return (loop-index parsed as a number)
+			stop
+	loop {generator::item::*}:
+		if loop-value is {_i}:
+			return (loop-index parsed as a number)
+			stop
+
+function resetPlayerGens(p: offlineplayer):
+	set {_u} to uuid of {_p}
+	loop all mongo documents with mongosk filter where field "uuid" is {_u} of collection {gen-collection}:
+		deletePlayerGen("%mongo value ""id"" of loop-value%")
+
+function deletePlayerGen(id: text):
+	set {_document} to first mongo document with mongosk filter where field "id" is {_id} of collection {gen-collection}
+	if {_document} is set:
+		set {_u} to mongo value "uuid" of {_document}
+		set {_location} to mongo value "location" of {_document}
+		delete {-generator::placed::%{_u}%::%{_id}%}
+		delete {-generator::placedgentype::%{_u}%::%{_id}%}
+		set block at {_location} to air
+		remove mongo document {_document} from {gen-collection}
+
+function isGen(b: block) :: boolean:
+	set {_document} to first mongo document with mongosk filter where field "textloc" is "%location of {_b}%" of collection {gen-collection}
+	if {_document} is set:
+		return true
+	return false
+
+#EVENTS
+
+on place:
+	if name of player's tool contains "Gen":
+		if getGenSize(player) >= {generator::limit::%player's uuid%}:
+			error(player, "You already have the max amount of gens!")
+			cancel event
+			stop
+		if getGenSize(player) >= 250:
+			error(player, "You already have the max amount of gens!")
+			cancel event
+			stop
+		if metadata "placegen" of player is true:
+			error(player, "Please wait a moment!")
+			cancel event
+			stop
+		add the owner of the plot with id "%id of plot at event-block%" to {_players::*} if id of plot at event-block is set
+		add the trusted players of the plot with id "%id of plot at event-block%" to {_players::*} if id of plot at event-block is set
+		if {_players::*} does not contain player:
+			error(player, "You cannot place that gen here!")
+			cancel event
+			stop
+		loop {generator::block::*}:
+			if player's tool is loop-value:
+				set metadata "placegen" of player to true
+				set {_newDocument} to new mongo document
+				set mongo value "location" of {_newDocument} to location of event-block
+				set mongo value "textloc" of {_newDocument} to "%location of event-block%"
+				set mongo value "blockdata" of {_newDocument} to "%blockdata of event-block%"
+				set mongo value "gentype" of {_newDocument} to 1 of player's tool
+				set mongo value "uuid" of {_newDocument} to player's uuid
+				set {_id} to genCode(30)
+				set {_id} to {_id} in lower case
+				set {_document} to first mongo document with mongosk filter where field "id" is {_id} of collection {gen-collection}
+				if {_document} is set:
+					set {_id} to genCode(30)
+					set {_id} to {_id} in lower case
+				set mongo value "id" of {_newDocument} to {_id}
+				insert mongo document {_newDocument} into collection {gen-collection}
+				set {-generator::placed::%player's uuid%::%{_id}%} to event-block
+				set {-generator::placedgentype::%player's uuid%::%{_id}%} to 1 of player's tool
+				send title "&b&lYOU PLACED A GEN" with subtitle "&8[ &f%getGenSize(player)% &7/ &f%{generator::limit::%player's uuid%}% &8]" to player
+				loop blocks in radius 1 around event-block:
+					if loop-block is water:
+						send "&4&lWARNING&4: &fGens can break when placed in water, we will not be reimbursing broken gens." to player
+						stop loop
+				play sound "entity.arrow.hit_player" at volume 0.5 to player
+				wait 3 ticks
+				clear metadata "placegen" of player
+				stop
+
+on drop:
+	set metadata value "dropped" of event-entity to true
+
+on pick up:
+	player is not op
+	player is in world world("Plots")
+	add the owner of the plot with id "%id of plot at event-entity%" to {_players::*} if id of plot at event-entity is set
+	add the trusted players of the plot with id "%id of plot at event-entity%" to {_players::*} if id of plot at event-entity is set
+	{_players::*} does not contain player
+	metadata value "dropped" of event-entity is not set
+	cancel event
+
+on join:
+	mongoDB_loadPlayerData(player)
+	wait 5 ticks
+	while player is online:
+		wait 10 seconds
+		if getLoopStack(player, 10 seconds) = true:
+			stop
+		set {_amount} to getBestBooster(player)
+		if {generator::limit::%player's uuid%} > 250:
+			set {generator::limit::%player's uuid%} to 250 
+			error(player, "Your gen limit was lowered to meet the gen cap (250)")
+		if {hopper::limit::%player's uuid%} > 500:
+			set {hopper::limit::%player's uuid%} to 500 
+			error(player, "Your hopper limit was lowered to meet the hopper cap (500)")
+		if {multiplier::%player's uuid%} > 10:
+			set {multiplier::%player's uuid%} to 10
+			error(player, "Your multiplier was lowered to meet the multiplier max (10)")
+		if player is online:
+			loop {-generator::placedgentype::%player's uuid%::*}:
+				drop {_amount} of getGenItem({-generator::placedgentype::%player's uuid%::%loop-index%}) at block above {-generator::placed::%player's uuid%::%loop-index%} without velocity if chunk at location of {-generator::placed::%player's uuid%::%loop-index%} is loaded
+
+on quit:
+	wait 2 seconds
+	mongoDB_deletePlayerData(player)
+
+on left click:
+	if {-generator::placed::%player's uuid%::*} contains event-block:
+		cancel event
+		loop {-generator::placed::%player's uuid%::*}:
+			if loop-value is event-block:
+				if player can hold 1 of {-generator::placedgentype::%player's uuid%::%loop-index%}:
+					give player 1 of {-generator::placedgentype::%player's uuid%::%loop-index%}
+					deletePlayerGen(loop-index)
+					send title "&b&lYOU BROKE A GEN" with subtitle "&8[ &f%getGenSize(player)% &7/ &f%{generator::limit::%player's uuid%}% &8]" to player
+					play sound "entity.arrow.hit_player" at volume 0.5 with pitch 0 to player
+				else:
+					error(player, "You do not have enough inventory space for this!")
+	else:
+		if isGen(event-block) is true:
+			cancel event
+			error(player, "This is not your generator!")
+
+on right click:
+	if player is sneaking:
+		if {-generator::placed::%player's uuid%::*} contains event-block:
+			cancel event
+			loop {-generator::placed::%player's uuid%::*}:
+				if loop-value is event-block:
+					set {_n} to getGenNum({-generator::placedgentype::%player's uuid%::%loop-index%}) + 1
+					if {_n} is 29:
+						error(player, "This is already a max generator!")
+						stop
+					if {balance::%player's uuid%} is greater than {generator::cost::%{_n}%}:
+						if metadata "upgradegen" of player is true:
+							stop
+						set metadata value "upgradegen" of player to true
+						subtract {generator::cost::%{_n}%} from {balance::%player's uuid%}
+						set block at location of event-block to {generator::block::%{_n}%}
+						set {-generator::placedgentype::%player's uuid%::%loop-index%} to {generator::block::%{_n}%}
+						set {_document} to first mongo document with mongosk filter where field "textloc" is "%location of event-block%" of collection {gen-collection}
+						set mongo value "blockdata" of {_document} to "%blockdata of event-block%"
+						set mongo value "gentype" of {_document} to {generator::block::%{_n}%}
+						update mongo document {_document} of {gen-collection}
+						send title "&b&lYOU UPGRADED A GEN" with subtitle "&8[ &f%{_n} - 1% &7-> &f%{_n}% &8]" to player
+						play sound "entity.arrow.hit_player" at volume 0.5 to player
+						wait 3 ticks
+						clear metadata value "upgradegen" of player
+						stop
+					else:
+						if {generator::cost::%{_n}%} is set:
+							error(player, "You do not have enough money to upgrade this gen! &7(You need &a$%formatmoney({generator::cost::%{_n}%})%&7 to upgrade this generator)")
+						else:
+							error(player, "The next generator is not set! You cannot upgrade!")
+		else:
+			if isGen(event-block) is true:
+				cancel event
+				error(player, "This is not your generator!")

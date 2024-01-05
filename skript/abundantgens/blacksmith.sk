@@ -1,0 +1,426 @@
+#BLACKSMITH.SK
+
+#OPTIONS
+
+options:
+	prefix: &b&lABUNDANT &8•
+	pm: &4No permission.
+
+#COMMANDS
+
+command /swp <text> <integer> <integer> <text>:
+	permission: op
+	permission message: {@pm}
+	trigger:
+		set {prices::%arg-1%::%arg-2%} to arg-3 of {item::%arg-4%}
+		send "{@prefix} &7You set the price of &f%arg-1% &f%arg-2% &7to &bx%arg-3% &b%displayname of {item::%arg-4%}%&7!" to player
+
+#EVENTS
+
+on npc right click:
+	if name of citizen event-number is "&b&l&nBLACKSMITH":
+		metadata value "talkingtonpc" of player is not set
+		if {blacksmith::claimed::%player's uuid%} is not set:
+			set metadata value "talkingtonpc" of player to true
+			send "%nl%&b&lBLACKSMITH &8• &fHello there %player%&f! Welcome to the Abundant Warzone!%nl%" to player
+			play sound "entity.villager.yes" at pitch 0.7 to player
+			wait 3 seconds
+			send "%nl%&b&lBLACKSMITH &8• &fLooking to get started mining and fighting eh? Well you've come to the right place!%nl%" to player
+			play sound "entity.villager.yes" at pitch 0.7 to player
+			wait 3 seconds
+			if player can hold 1 of getArmor(1, "boots"), getArmor(1, "leggings"), getArmor(1, "chestplate"), getArmor(1, "helmet"), getSword(1) and getPickaxe(1):
+				send "%nl%&b&lBLACKSMITH &8• &fNormally I charge people for gear, but you seem pretty cool. Here is a free set of gear to get you started!%nl%" to player
+				play sound "entity.villager.yes" at pitch 0.7 to player
+				give player 1 of getArmor(1, "boots")
+				give player 1 of getArmor(1, "leggings")
+				give player 1 of getArmor(1, "chestplate")
+				give player 1 of getArmor(1, "helmet")
+				give player 1 of getSword(1)
+				give player 1 of getPickaxe(1)
+				wait 3 seconds
+				send "%nl%&b&lBLACKSMITH &8• &fIf you ever feel the need to upgrade your gear, just come see me! Depending on the upgrade I will need some ore to forge with, but that shouldn't be too big of an issue!%nl%" to player
+				play sound "entity.villager.yes" at pitch 0.7 to player
+				wait 3 seconds
+				send "%nl%&b&lBLACKSMITH &8• &fAlright, I'll see you around %player%&f!%nl%"
+				play sound "entity.villager.yes" at pitch 0.7 to player
+				set {blacksmith::claimed::%player's uuid%} to true
+			else:
+				send "%nl%&b&lBLACKSMITH &8• &fOh pooey, I was going to give you some free gear, but you don't have any room to carry it! Come back another time when you have more space!%nl%" to player
+				play sound "entity.villager.no" at pitch 0.7 to player
+			clear metadata value "talkingtonpc" of player
+		else:
+			play sound "entity.chicken.egg" at pitch 0 to player
+			set {_tool} to player's tool
+			blacksmithMenu(player, {_tool})
+
+#FUNCTIONS
+
+function blacksmithMenu(p: player, tool: item):
+	create a gui with virtual chest inventory with size 5 named "&8Blacksmith":
+		make gui slot (integers between 0 and 44) with light gray stained glass pane named "&1"
+		make gui slot (integers between 0 and 9), 17, 18, 26, 27, 35, and (integers between 36 and 44) with black stained glass pane named "&1"
+		make gui slot 44 with barrier named "&4Close Menu":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			close {_p}'s inventory
+		make gui slot 20 with {item::noflagpick} named "&fPickaxe Menu" with lore "", "&8• &7Click &bhere &7to buy" and "&7or upgrade a pickaxe!":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			upgradePickaxeMenu({_p}, {_tool})
+		make gui slot 21 with {item::noflagsword} named "&fSword Menu" with lore "", "&8• &7Click &bhere &7to buy" and "&7or upgrade a sword!":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			upgradeSwordMenu({_p}, {_tool})
+		make gui slot 22 with {item::noflagchestplate} named "&fArmor Menu" with lore "", "&8• &7Click &bhere &7to buy" and "&7or upgrade armor!":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			upgradeArmorMenu({_p}, {_tool})
+		make gui slot 23 with {item::moneybag} named "&fSell Your Ores" with lore "", "&8• &7Click &bhere &7to sell" and "&7your ores for crystals!":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			sellOresMenu({_p}, {_tool})
+		make gui slot 24 with tripwire hook named "&fKey Forging" with lore "", "&8• &7Click &bhere &7to forge" and "&7your ores into crate keys!":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			keyForgingMenu({_p}, {_tool})
+	open the last gui to {_p}
+
+function upgradePickaxeMenu(p: player, pickaxe: item):
+	set {_u} to {_p}'s uuid
+	create a gui with virtual chest inventory with size 5 named "&8Pickaxe Menu":
+		make gui slot (integers between 0 and 44) with light gray stained glass pane named "&1"
+		make gui slot (integers between 0 and 9), 17, 18, 26, 27, 35, and (integers between 36 and 44) with black stained glass pane named "&1"
+		make gui slot 44 with barrier named "&4Back":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			blacksmithMenu({_p}, {_pickaxe})
+		make gui slot 20 with {item::buynewpickaxe}:
+			if {crystals::%{_u}%} >= 100:
+				if {_p} can hold 1 of getPickaxe(1):
+					subtract 100 from {crystals::%{_u}%}
+					give {_p} 1 of getPickaxe(1)
+					send "{@prefix} &7You just purchased a new pickaxe!" to {_p}
+					play sound "block.anvil.use" at pitch 1.8 to {_p}
+					close {_p}'s inventory
+				else:
+					error({_p}, "You do not have enough inventory space for this!")
+			else:
+				error({_p}, "Insufficient funds")
+		if getGearLevel({_pickaxe}) is 0:
+			make gui slot 22, 23 and 24 with barrier named "&fInvalid Tool" with lore "", "&8• &7You must be holding a valid" and "&7pickaxe to upgrade!"
+			make gui slot 40 with red concrete named "&fInvalid Tool" with lore "", "&8• &7You must be holding a valid" and "&7pickaxe to upgrade!"
+		else if displayname of {_pickaxe} does not contain "Pickaxe":
+			make gui slot 22, 23 and 24 with barrier named "&fInvalid Tool" with lore "", "&8• &7You must be holding a valid" and "&7pickaxe to upgrade!"
+			make gui slot 40 with red concrete named "&fInvalid Tool" with lore "", "&8• &7You must be holding a valid" and "&7pickaxe to upgrade!"
+		else if getGearLevel({_pickaxe}) is 25:
+			make gui slot 22, 23 and 24 with barrier named "&fAlready Maxed" with lore "", "&8• &7Your tool is already" and "&7fully maxed out!"
+			make gui slot 40 with red concrete named "&fAlready Maxed" with lore "", "&8• &7Your tool is already" and "&7fully maxed out!"
+		else:
+			make gui slot 23 with {item::bluearrow} named "&1"
+			make gui slot 22 with {_pickaxe}
+			make gui slot 24 with 1 of getPickaxe(getGearLevel({_pickaxe}) + 1)
+			set {_pl} to getGearLevel({_pickaxe}) + 1
+			set {_cost} to {prices::pickaxe::%{_pl}%}
+			set {_name} to displayname of {_cost}
+			set {_amount} to item amount of {_cost}
+			make gui slot 40 with lime concrete named "&fUpgrade Pickaxe" with lore "", "&7Cost: &fx%{_amount}% &f%{_name}%", "" and "&8• &7Click &bhere &7to upgrade":
+				if {_p} has {_amount} of {_cost}:
+					if {_p} has 1 of {_pickaxe}:
+						remove {_amount} of {_cost} from {_p}'s inventory
+						remove 1 of {_pickaxe} from {_p}'s inventory
+						give {_p} 1 of getPickaxe((getGearLevel({_pickaxe}) + 1))
+						send "{@prefix} &7You just upgraded your pickaxe!" to {_p}
+						play sound "block.anvil.use" at pitch 1.8 to {_p}
+						close {_p}'s inventory
+					else:
+						error({_p}, "Your pickaxe went missing...")
+				else:
+					error({_p}, "Insufficient resources")
+	open the last gui to {_p}
+
+function upgradeSwordMenu(p: player, sword: item):
+	set {_u} to {_p}'s uuid
+	create a gui with virtual chest inventory with size 5 named "&8Sword Menu":
+		make gui slot (integers between 0 and 44) with light gray stained glass pane named "&1"
+		make gui slot (integers between 0 and 9), 17, 18, 26, 27, 35, and (integers between 36 and 44) with black stained glass pane named "&1"
+		make gui slot 44 with barrier named "&4Back":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			blacksmithMenu({_p}, {_sword})
+		make gui slot 20 with {item::buynewsword}:
+			if {crystals::%{_u}%} >= 100:
+				if {_p} can hold 1 of getSword(1):
+					subtract 100 from {crystals::%{_u}%}
+					give {_p} 1 of getSword(1)
+					send "{@prefix} &7You just purchased a new sword!" to {_p}
+					play sound "block.anvil.use" at pitch 1.8 to {_p}
+					close {_p}'s inventory
+				else:
+					error({_p}, "You do not have enough inventory space for this!")
+			else:
+				error({_p}, "Insufficient funds")
+		if getGearLevel({_sword}) is 0:
+			make gui slot 22, 23 and 24 with barrier named "&fInvalid Tool" with lore "", "&8• &7You must be holding a valid" and "&7sword to upgrade!"
+			make gui slot 40 with red concrete named "&fInvalid Tool" with lore "", "&8• &7You must be holding a valid" and "&7sword to upgrade!"
+		else if displayname of {_sword} does not contain "Sword":
+			make gui slot 22, 23 and 24 with barrier named "&fInvalid Tool" with lore "", "&8• &7You must be holding a valid" and "&7sword to upgrade!"
+			make gui slot 40 with red concrete named "&fInvalid Tool" with lore "", "&8• &7You must be holding a valid" and "&7sword to upgrade!"
+		else if getGearLevel({_sword}) is 25:
+			make gui slot 22, 23 and 24 with barrier named "&fAlready Maxed" with lore "", "&8• &7Your sword is already" and "&7fully maxed out!"
+			make gui slot 40 with red concrete named "&fAlready Maxed" with lore "", "&8• &7Your sword is already" and "&7fully maxed out!"
+		else:
+			make gui slot 23 with {item::bluearrow} named "&1"
+			make gui slot 22 with {_sword}
+			make gui slot 24 with 1 of getSword(getGearLevel({_sword}) + 1)
+			set {_pl} to getGearLevel({_sword}) + 1
+			set {_cost} to {prices::sword::%{_pl}%}
+			set {_name} to displayname of {_cost}
+			set {_amount} to item amount of {_cost}
+			make gui slot 40 with lime concrete named "&fUpgrade Sword" with lore "", "&7Cost: &fx%{_amount}% &f%{_name}%", "" and "&8• &7Click &bhere &7to upgrade":
+				if {_p} has {_amount} of {_cost}:
+					if {_p} has 1 of {_sword}:
+						remove {_amount} of {_cost} from {_p}'s inventory
+						remove 1 of {_sword} from {_p}'s inventory
+						give {_p} 1 of getSword((getGearLevel({_sword}) + 1))
+						send "{@prefix} &7You just upgraded your sword!" to {_p}
+						play sound "block.anvil.use" at pitch 1.8 to {_p}
+						close {_p}'s inventory
+					else:
+						error({_p}, "Your sword went missing...")
+				else:
+					error({_p}, "Insufficient resources")
+	open the last gui to {_p}
+
+function upgradeArmorMenu(p: player, tool: item):
+	set {_u} to {_p}'s uuid
+	create a gui with virtual chest inventory with size 5 named "&8Armor Menu":
+		make gui slot (integers between 0 and 44) with light gray stained glass pane named "&1"
+		make gui slot (integers between 0 and 9), 17, 18, 26, 27, 35, and (integers between 36 and 44) with black stained glass pane named "&1"
+		make gui slot 44 with barrier named "&4Back":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			blacksmithMenu({_p}, {_tool})
+		make gui slot 20 with {item::noflagchestplate1} named "&fLeather Armor":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			upgradeArmorMenuPart2({_p}, 0, {_tool})
+		make gui slot 21 with {item::noflagchestplate2} named "&fChainmail Armor":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			upgradeArmorMenuPart2({_p}, 5, {_tool})
+		make gui slot 22 with {item::noflagchestplate3} named "&fIron Armor":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			upgradeArmorMenuPart2({_p}, 10, {_tool})
+		make gui slot 23 with {item::noflagchestplate4} named "&fDiamond Armor":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			upgradeArmorMenuPart2({_p}, 15, {_tool})
+		make gui slot 24 with {item::noflagchestplate5} named "&fNetherite Armor":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			upgradeArmorMenuPart2({_p}, 20, {_tool})
+	open the last gui to {_p}
+
+function upgradeArmorMenuPart2(p: player, type: number, tool: item):
+	set {_u} to {_p}'s uuid
+	create a gui with id "armorp2-%{_u}%" with virtual chest inventory with size 6 named "&8Armor Menu":
+		make gui slot 11, 20, 29, 38, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 with black stained glass pane named "&1"
+		make gui slot 53 with barrier named "&4Back":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			upgradeArmorMenu({_p}, {_tool})
+		armorLoop({_p})
+		set {_tier} to 0
+		loop 20 times:
+			add 1 to {_tier}
+			if loop-number is 1:
+				set {_armor.type} to "helmet"
+			else if loop-number is 6:
+				set {_armor.type} to "chestplate"
+			else if loop-number is 11:
+				set {_armor.type} to "leggings"
+			else if loop-number is 16:
+				set {_armor.type} to "boots"
+			if ({_tier} - 1) is 5:
+				set {_tier} to 1
+			set {_tier.type} to {_tier} + {_type}
+			set {_item} to getArmor(({_tier} + {_type}), {_armor.type})
+			set {_cost} to {prices::armor::%{_tier.type}%}
+			set {_name} to displayname of {_cost}
+			set {_amount} to item amount of {_cost}
+			set line (getLoreLines({_item}) + 1) of {_item}'s lore to ""
+			set line (getLoreLines({_item}) + 1) of {_item}'s lore to "&7Cost:"
+			set line (getLoreLines({_item}) + 1) of {_item}'s lore to "&8• &fx%{_amount}% &f%{_name}%"
+			set line (getLoreLines({_item}) + 1) of {_item}'s lore to "&8• &fPrevious Item"
+			set line (getLoreLines({_item}) + 1) of {_item}'s lore to ""
+			set line (getLoreLines({_item}) + 1) of {_item}'s lore to "&8• &7Click &bhere &7to upgrade"
+			if {_tier} + {_type} = 1:
+				make gui slot (loop-number + 7 + (4 * ceil(loop-number / 5))) with {item::buynew%{_armor.type}%}:
+					set {_name.event} to name of event-item
+					replace all "&fLeather " in {_name.event} with ""
+					set {_type.event} to {_name.event} in lower case
+					if {crystals::%{_u}%} >= 100:
+						if {_p} can hold 1 of getArmor(1, {_type.event}):
+							subtract 100 from {crystals::%{_u}%}
+							give {_p} 1 of getArmor(1, {_type.event})
+							send "{@prefix} &7You just purchased a new %{_type.event}%&7!" to {_p}
+							play sound "block.anvil.use" at pitch 1.8 to {_p}
+						else:
+							error({_p}, "You do not have enough inventory space for this!")
+					else:
+						error({_p}, "Insufficient funds")
+			else:
+				make gui slot (loop-number + (7 + (4 * ceil(loop-number / 5)))) with {_item}:
+					set {_name} to name of event-item
+					replace all "&bLeather ", "&bChainmail ", "&bIron ", "&bDiamond " and "&bNetherite " in {_name} with ""
+					set {_name.split::*} to split {_name} at " "
+					set {_type.event} to {_name.split::1} in lower case
+					if name of event-item contains "Leather":
+						set {_tier.event} to 0
+					if name of event-item contains "Chainmail":
+						set {_tier.event} to 5
+					if name of event-item contains "Iron":
+						set {_tier.event} to 10
+					if name of event-item contains "Diamond":
+						set {_tier.event} to 15
+					if name of event-item contains "Netherite":
+						set {_tier.event} to 20
+					set {_row} to floor((clicked slot - 3) / 9)
+					set {_value} to (clicked slot - 2) - ({_row} * 9)
+					add {_value} to {_tier.event}
+					set {_cost.event} to {prices::armor::%{_tier.event}%}
+					set {_amount.event} to item amount of {_cost.event}
+					if {_p} has {_amount} of {_cost}:
+						if {_p} has 1 of getArmor({_tier.event} - 1, {_type.event}):
+							if {_p} can hold 1 of getArmor({_tier.event}, {_type.event}):
+								remove {_amount.event} of {_cost.event} from {_p}'s inventory
+								remove 1 of getArmor(({_tier.event} - 1), {_type.event}) from {_p}'s inventory
+								give {_p} 1 of getArmor({_tier.event}, {_type.event})
+								send "{@prefix} &7You just upgraded your %{_type.event}%&7!" to {_p}
+								play sound "block.anvil.use" at pitch 1.8 to {_p}
+								armorLoop({_p})
+							else:
+								error({_p}, "You do not have enough inventory space for this!")
+						else:
+							error({_p}, "You do not have the previous armor piece!")
+					else:
+						error({_p}, "Insufficient resources")
+		run on gui close:
+			delete gui with id "armorp2-%{_u}%"
+	open the last gui to {_p}
+
+function armorLoop(p: player):
+	set {_u} to uuid of {_p}
+	edit gui with id "armorp2-%{_u}%":
+		loop 4 times:
+			make gui slot (1 + (loop-number * 9)) with red concrete named "&4&lNOT WEARING"
+		if {_p}'s helmet is not air:
+			make gui slot 10 with {_p}'s helmet
+		if {_p}'s chestplate is not air:
+			make gui slot 19 with {_p}'s chestplate
+		if {_p}'s leggings is not air:
+			make gui slot 28 with {_p}'s leggings
+		if {_p}'s boots is not air:
+			make gui slot 37 with {_p}'s boots
+
+function sellOresMenu(p: player, tool: item):
+	create a gui with virtual chest inventory with size 4 named "&8Sell Ores":
+		make gui slot (integers between 27 and 35) with black stained glass pane named "&1"
+		make gui slot 35 with barrier named "&4Back":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			blacksmithMenu({_p}, {_tool})
+		make gui slot 10 with coal named "&fSell Enriched Coal" with lore "", "&8• &7Click &bhere &7to sell all", "&7of your enriched coal!", "" and  "&7Worth: &d♦1":
+			sellAllOres({_p}, {item::enrichedcoal}, 1)
+		make gui slot 11 with iron ingot named "&fSell Enriched Iron" with lore "", "&8• &7Click &bhere &7to sell all", "&7of your enriched iron!", "" and  "&7Worth: &d♦1.5":
+			sellAllOres({_p}, {item::enrichediron}, 1.5)
+		make gui slot 12 with lapis lazuli named "&fSell Enriched Lapis" with lore "", "&8• &7Click &bhere &7to sell all", "&7of your enriched lapis!", "" and  "&7Worth: &d♦1.5":
+			sellAllOres({_p}, {item::enrichedlapis}, 1.5)
+		make gui slot 13 with gold ingot named "&fSell Enriched Gold" with lore "", "&8• &7Click &bhere &7to sell all", "&7of your enriched gold!", "" and  "&7Worth: &d♦2":
+			sellAllOres({_p}, {item::enrichedgold}, 2)
+		make gui slot 14 with redstone dust named "&fSell Enriched Redstone" with lore "", "&8• &7Click &bhere &7to sell all", "&7of your enriched redstone!", "" and  "&7Worth: &d♦2":
+			sellAllOres({_p}, {item::enrichedredstone}, 2)
+		make gui slot 15 with diamond named "&fSell Enriched Diamonds" with lore "", "&8• &7Click &bhere &7to sell all", "&7of your enriched diamonds!", "" and  "&7Worth: &d♦2.5":
+			sellAllOres({_p}, {item::enricheddiamond}, 2.5)
+		make gui slot 16 with emerald named "&fSell Enriched Emeralds" with lore "", "&8• &7Click &bhere &7to sell all", "&7of your enriched emeralds!", "" and  "&7Worth: &d♦3":
+			sellAllOres({_p}, {item::enrichedemerald}, 3)
+	open the last gui to {_p}
+
+function sellAllOres(p: player, ore: item, worth: number):
+	set {_u} to uuid of {_p}
+	loop 36 times:
+		if slot (loop-number - 1) of {_p} is {_ore}:
+			set {_amt} to item amount of (slot (loop-number - 1) of {_p})
+			add {_amt}*{_worth} to {_total}
+			set slot (loop-number - 1) of {_p} to air
+	if {_total} is set:
+		if displayname of {_ore} contains "Diamond" or "Emerald":
+			set {_s} to "s"
+		else:
+			set {_s} to ""
+		send "{@prefix} &7You sold all of your &f%displayname of {_ore}%%{_s}% &7for &d♦%ceil({_total})%&7!" to {_p}
+		add ceil({_total}) to {crystals::%{_u}%}
+		play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+	else:
+		error({_p}, "You have none of this ore to sell!")
+
+function keyForgingMenu(p: player, tool: item):
+	create a gui with virtual chest inventory with size 5 named "&8Key Forging":
+		make gui slot (integers between 0 and 44) with light gray stained glass pane named "&1"
+		make gui slot (integers between 0 and 9), 17, 18, 26, 27, 35, and (integers between 36 and 44) with black stained glass pane named "&1"
+		make gui slot 44 with barrier named "&4Back":
+			play sound "entity.chicken.egg" at pitch 0 to {_p}
+			blacksmithMenu({_p}, {_tool})
+		make gui slot 20 with tripwire hook named "&9&lRARE &7Key" with lore "", "&7Required Materials:", "&8• &fx32 Enriched Coal", "" and "&8• &7Click &bhere &7to forge":
+			if {_p} has 32 of {item::enrichedcoal}:
+				if {_p} can hold {item::rarekey}:
+					give {_p} 1 of {item::rarekey}
+					remove 32 of {item::enrichedcoal} from {_p}'s inventory
+					send "{@prefix} &7You forged a &9&lRARE KEY&7!"
+					play sound "block.anvil.use" at pitch 1.8 to {_p}
+				else:
+					error({_p}, "You do not have enough inventory space for this!")
+			else:
+				error({_p}, "Insufficient resources")
+		make gui slot 21 with tripwire hook named "&5&lEPIK &7Key" with lore "", "&7Required Materials:", "&8• &fx64 Enriched Iron", "&8• &fx16 Enriched Lapis", "" and "&8• &7Click &bhere &7to forge":
+			if {_p} has 64 of {item::enrichediron}:
+				if {_p} has 16 of {item::enrichedlapis}:
+					if {_p} can hold {item::epikkey}:
+						give {_p} 1 of {item::epikkey}
+						remove (64 of {item::enrichediron}) and (16 of {item::enrichedlapis}) from {_p}'s inventory
+						send "{@prefix} &7You forged an &5&lEPIK KEY&7!"
+						play sound "block.anvil.use" at pitch 1.8 to {_p}
+					else:
+						error({_p}, "You do not have enough inventory space for this!")
+				else:
+					error({_p}, "Insufficient resources")
+			else:
+				error({_p}, "Insufficient resources")
+		make gui slot 22 with tripwire hook named "&2&lEXOTIC &7Key" with lore "", "&7Required Materials:", "&8• &fx96 Enriched Gold", "&8• &fx32 Enriched Lapis", "" and "&8• &7Click &bhere &7to forge":
+			if {_p} has 96 of {item::enrichedgold}: 
+				if {_p} has 32 of {item::enrichedlapis}:
+					if {_p} can hold {item::exotickey}:
+						give {_p} 1 of {item::exotickey}
+						remove (96 of {item::enrichedgold}) and (32 of {item::enrichedlapis}) from {_p}'s inventory
+						send "{@prefix} &7You forged an &2&lEXOTIC KEY&7!"
+						play sound "block.anvil.use" at pitch 1.8 to {_p}
+					else:
+						error({_p}, "You do not have enough inventory space for this!")
+				else:
+					error({_p}, "Insufficient resources")
+			else:
+				error({_p}, "Insufficient resources")
+		make gui slot 23 with tripwire hook named "&6&lLEGENDARY &7Key" with lore "", "&7Required Materials:", "&8• &fx160 Enriched Diamond", "&8• &fx48 Enriched Redstone", "" and "&8• &7Click &bhere &7to forge":
+			if {_p} has 160 of {item::enricheddiamond}:
+				if {_p} has 48 of {item::enrichedredstone}:
+					if {_p} can hold {item::legendarykey}:
+						give {_p} 1 of {item::legendarykey}
+						remove (160 of {item::enricheddiamond}) and (48 of {item::enrichedredstone}) from {_p}'s inventory
+						send "{@prefix} &7You forged a &6&lLEGENDARY KEY&7!"
+						play sound "block.anvil.use" at pitch 1.8 to {_p}
+					else:
+						error({_p}, "You do not have enough inventory space for this!")
+				else:
+					error({_p}, "Insufficient resources")
+			else:
+				error({_p}, "Insufficient resources")
+		make gui slot 24 with tripwire hook named "&e&lMYTHIC &7Key" with lore "", "&7Required Materials:", "&8• &fx256 Enriched Emerald", "&8• &fx64 Enriched Redstone", "" and "&8• &7Click &bhere &7to forge":
+			if {_p} has 256 of {item::enrichedemerald}:
+				if {_p} has 64 of {item::enrichedredstone}:
+					if {_p} can hold {item::mythickey}:
+						give {_p} 1 of {item::mythickey}
+						remove (256 of {item::enrichedemerald}) and (64 of {item::enrichedredstone}) from {_p}'s inventory
+						send "{@prefix} &7You forged a &e&lMYTHIC KEY&7!"
+						play sound "block.anvil.use" at pitch 1.8 to {_p}
+					else:
+						error({_p}, "You do not have enough inventory space for this!")
+				else:
+					error({_p}, "Insufficient resources")
+			else:
+				error({_p}, "Insufficient resources")
+	open the last gui to {_p}

@@ -1,0 +1,317 @@
+#PUNISH
+
+#--OPTIONS--
+
+options:
+	pm: &4No permission.
+	prefix: &b&lABUNDANT &8•
+	punishprefix: &4&lPUNISH &8•
+
+#--COMMANDS--
+
+command /ban [<offline player>] [<text>]:
+	permission: skript.mod.ban
+	permission message: {@pm}
+	trigger:
+		if arg-1 is set:
+			if {punish::ban::status::%arg-1's uuid%} is not set:
+				if arg-2 is set:
+					ban(arg-1, player, {_none}, arg-2)
+				else:
+					ban(arg-1, player, {_none}, "Reason not specified")
+			else:
+				error(player, "This user is already banned!")
+		else:
+			error(player, "You must specify a player to ban!")
+
+command /banip [<offline player>] [<text>]:
+	permission: skript.mod.ban
+	permission message: {@pm}
+	trigger:
+		if arg-1 is set:
+			set {_ip} to {ip::%arg-1's uuid%}
+			broadcast "%{_ip}%"
+			broadcast "%{punish::ban::status::%{_ip}%}%"
+			if {punish::ban::status::%{_ip}%} is not set:
+				if arg-2 is set:
+					banip({_ip}, player, {_none}, arg-2)
+				else:
+					banip({_ip}, player, {_none}, "Reason not specified")
+			else:
+				error(player, "This user's IP is already banned!")
+		else:
+			error(player, "You must specify a player's IP to ban!")
+
+command /tempban [<offline player>] [<text>] [<text>]:
+	permission: skript.mod.tempban
+	permission message: {@pm}
+	trigger:
+		if arg-1 is set:
+			if {punish::ban::status::%arg-1's uuid%} is not set:
+				if arg-2 is set:
+					set {_time} to convertTimespan(arg-2)
+					if {_time} is set:
+						if arg-3 is set:
+							ban(arg-1, player, {_time}, arg-3)
+						else:
+							ban(arg-1, player, {_time}, "Reason not specified")
+					else:
+						error(player, "You must enter a valid timespan!")
+				else:
+					error(player, "You must specify a timespan!")
+			else:
+				error(player, "This user is already banned!")
+		else:
+			error(player, "You must specify a player to ban!")
+
+command /tempbanip [<offline player>] [<text>] [<text>]:
+	permission: skript.mod.tempbanip
+	permission message: {@pm}
+	trigger:
+		if arg-1 is set:
+			set {_ip} to {ip::%arg-1's uuid%}
+			if {punish::ban::status::%{_ip}%} is not set:
+				if arg-2 is set:
+					set {_time} to convertTimespan(arg-2)
+					if {_time} is set:
+						if arg-3 is set:
+							banip({_ip}, player, {_time}, arg-3)
+						else:
+							banip({_ip}, player, {_time}, "Reason not specified")
+					else:
+						error(player, "You must enter a valid timespan!")
+				else:
+					error(player, "You must specify a timespan!")
+			else:
+				error(player, "This user's IP is already banned!")
+		else:
+			error(player, "You must specify a player's IP to ban!")
+
+command /unban [<offline player>]:
+	permission: skript.mod.unban
+	permission message: {@pm}
+	trigger:
+		if arg-1 is set:
+			if {punish::ban::status::%arg-1's uuid%} is set:
+				unban(arg-1)
+			else:
+				error(player, "This player is not currently banned!")
+		else:
+			error(player, "You must specify a player to unban!")
+
+command /unbanip [<offline player>]:
+	permission: skript.mod.unbanip
+	permission message: {@pm}
+	trigger:
+		if arg-1 is set:
+			set {_ip} to {ip::%arg-1's uuid%}
+			broadcast "%{_ip}%"
+			broadcast "%{punish::ban::status::%{_ip}%}%"
+			if {punish::ban::status::%{_ip}%} is set:
+				unbanip({_ip})
+			else:
+				error(player, "This player's IP is not currently banned!")
+		else:
+			error(player, "You must specify a player's IP to unban!")
+
+command /kick [<offline player>] [<text>]:
+	permission: skript.mod.kick
+	permission message: {@pm}
+	trigger:
+		if arg-1 is set:
+			if arg-1 is online:
+				if arg-2 is set:
+					kick arg-1 due to "%nl%{@prefix} &c&l&nYOU WERE KICKED&r%nl%%nl%&7Punisher: &f%player%%nl%&7Reason: &f%arg-2%%nl%"
+				else:
+					kick arg-1 due to "%nl%{@prefix} &c&l&nYOU WERE KICKED&r%nl%%nl%&7Punisher: &f%player%%nl%&7Reason: &fReason not specified%nl%"
+			else:
+				error(player, "This player is not online!")
+		else:
+			error(player, "You must specify a player to ban!")
+
+command /tempmute [<offline player>] [<text>] [<text>]:
+	permission: skript.mod.tempmute
+	permission message: {@pm}
+	trigger:
+		if arg-1 is set:
+			if {punish::mute::%arg-1's uuid%::status} is not set:
+				if arg-2 is set:
+					set {_time} to convertTimespan(arg-2)
+					if {_time} is set:
+						if arg-3 is set:
+							mute(arg-1, player, {_time}, arg-3)
+						else:
+							mute(arg-1, player, {_time}, "Reason not specified")
+					else:
+						error(player, "You must enter a valid timespan!")
+				else:
+					error(player, "You must specify a timespan!")
+			else:
+				error(player, "This user is already muted!")
+		else:
+			error(player, "You must specify a player to mute!")
+
+command /mute [<offline player>] [<text>]:
+	permission: skript.mod.mute
+	permission message: {@pm}
+	trigger:
+		if arg-1 is set:
+			if {punish::mute::%arg-1's uuid%::status} is not set:
+				if arg-2 is set:
+					mute(arg-1, player, {_none}, arg-2)
+				else:
+					mute(arg-1, player, {_none}, "Reason not specified")
+			else:
+				error(player, "This user is already muted!")
+		else:
+			error(player, "You must specify a player to mute!")
+
+command /unmute [<offline player>]:
+	permission: skript.mod.unmute
+	permission message: {@pm}
+	trigger:
+		if arg-1 is set:
+			if {punish::mute::status::%arg-1's uuid%} is set:
+				unmute(arg-1)
+			else:
+				error(player, "This player is not currently muted!")
+		else:
+			error(player, "You must specify a player to unmute!")
+
+command /clearchat:
+	permission: skript.mod.clearchat
+	permission message: {@pm}
+	trigger:
+		clearChat()
+		send "{@prefix} &7Chat has been cleared!%nl%" to all players
+		play sound "block.note_block.pling" to all players
+
+command /mutechat:
+	permission: skript.mod.mutechat
+	permission message: {@pm}
+	trigger:
+		toggleChat()
+		if {chat::muted} is set:
+			send "%nl%{@prefix} &7Chat has been muted!%nl%" to all players
+			play sound "block.note_block.pling" at pitch 0 to all players
+		else:
+			send "%nl%{@prefix} &7Chat has been un-muted!%nl%" to all players
+			play sound "block.note_block.pling" at pitch 2 to all players
+
+command /clearalltest:
+	trigger:
+		loop indices of {punish::*}:
+			loop indices of {punish::%loop-value%::*}:
+				delete {punish::%loop-value-1%::%loop-value-2%::*}
+			delete {punish::%loop-value%::*}
+		delete {punish::*}
+		loop indices of {log::*}:
+			loop indices of {log::%loop-value%::*}:
+				delete {log::%loop-value-1%::%loop-value-2%::*}
+			delete {log::%loop-value%::*}
+		delete {log::*}
+		delete {mod::*}
+		delete {punished::*}
+		delete {punishtype::*}
+		delete {offensetype::*}
+
+#--EVENTS--
+
+on connect:
+	if {punish::ban::status::%player's uuid%} is true:
+		kick player due to "%nl%%nl%{@prefix} &c&l&nYOU ARE BANNED&r%nl%%nl%&7Punisher: &f%{punish::ban::punisher::%player's uuid%}%%nl%&7Reason: &f%{punish::ban::reason::%player's uuid%}%%nl%&7Time Remaining: &f%punishTimeRemaining(player, ""ban"")%%nl%%nl%&fAppeal in the discord: &f3q7mn6rg9T%nl%"
+	else if {punish::ban::status::%player's IP%} is set:
+		kick player due to "%nl%{@prefix} &c&l&nYOU ARE IP-BANNED&r%nl%%nl%&7Punisher: &f%{punish::ban::punisher::%ip%}%%nl%&7Reason: &f%{punish::ban::reason::%ip%}%%nl%&7Time Remaining: &f%punishTimeRemaining(player, ""ban"", ip)%%nl%%nl%&fAppeal in the discord: &f3q7mn6rg9T%nl%"
+
+every 10 seconds:
+	loop {punish::ban::status::*}:
+		if difference between {punish::ban::whenpunished::%loop-index%} and now is more than {punish::ban::timespan::%loop-index%}:
+			if {players::*} contains loop-index parsed as an offline player:
+				unban(loop-index parsed as an offline player)
+			else:
+				unbanip(loop-index)
+	loop {punish::mute::status::*}:
+		if difference between {punish::mute::whenpunished::%loop-index%} and now is more than {punish::mute::timespan::%loop-index%}:
+			unmute(loop-index parsed as an offline player)
+
+#--FUNCTIONS--
+
+function ban(banned: offline player, punisher: offline player, time: timespan, reason: text):
+	set {_bu} to uuid of {_banned}
+	set {punish::ban::status::%{_bu}%} to true
+	set {punish::ban::whenpunished::%{_bu}%} to now
+	set {punish::ban::punisher::%{_bu}%} to {_punisher}
+	set {punish::ban::reason::%{_bu}%} to {_reason}
+	set {punish::ban::timespan::%{_bu}%} to {_time}
+	kick {_banned} due to "%nl%{@prefix} &c&l&nYOU ARE BANNED&r%nl%%nl%&7Punisher: &f%{punish::ban::punisher::%{_bu}%}%%nl%&7Reason: &f%{punish::ban::reason::%{_bu}%}%%nl%&7Time Remaining: &f%punishTimeRemaining({_banned}, ""ban"")%%nl%%nl%&fAppeal in the discord: &f3q7mn6rg9T%nl%"
+
+function banip(ip: object, punisher: offline player, time: timespan, reason: text):
+	set {punish::ban::status::%{_ip}%} to true
+	set {punish::ban::whenpunished::%{_ip}%} to now
+	set {punish::ban::punisher::%{_ip}%} to {_punisher}
+	set {punish::ban::reason::%{_ip}%} to {_reason}
+	set {punish::ban::timespan::%{_ip}%} to {_time}
+	loop all players:
+		if loop-player's IP = {_ip}:
+			kick loop-player due to "%nl%{@prefix} &c&l&nYOU ARE IP-BANNED&r%nl%%nl%&7Punisher: &f%{punish::ban::punisher::%{_ip}%}%%nl%&7Reason: &f%{punish::ban::reason::%{_ip}%}%%nl%&7Time Remaining: &f%punishTimeRemaining(loop-player, ""ban"", {_ip})%%nl%%nl%&fAppeal in the discord: &f3q7mn6rg9T%nl%"
+
+function mute(muted: offline player, punisher: offline player, time: timespan, reason: text):
+	set {_mu} to uuid of {_muted}
+	set {_pu} to uuid of {_punisher}
+	set {punish::mute::status::%{_mu}%} to true
+	set {punish::mute::whenpunished::%{_mu}%} to now
+	set {punish::mute::punisher::%{_mu}%} to {_punisher}
+	set {punish::mute::reason::%{_mu}%} to {_reason}
+	set {punish::mute::timespan::%{_mu}%} to {_time}
+	send "%nl%{@prefix} &c&l&nYOU HAVE BEEN MUTED%nl%%nl%&7Punisher: &f%{punish::mute::punisher::%{_mu}%}%%nl%&7Reason: &f%{punish::mute::reason::%{_mu}%}%%nl%&7Time Remaining: &f%punishTimeRemaining({_muted}, ""mute"")%%nl%%nl%&fAppeal in the discord: <link:https://discord.gg/3q7mn6rg9T>&a&l&nCLICK HERE<reset>%nl%" to {_muted}
+	play sound "block.note_block.pling" at pitch 0 to {_muted}
+
+function unban(p: offline player):
+	set {_u} to uuid of {_p}
+	delete {punish::ban::status::%{_u}%}
+	delete {punish::ban::whenpunished::%{_u}%}
+	delete {punish::ban::punisher::%{_u}%}
+	delete {punish::ban::reason::%{_u}%}
+	delete {punish::ban::timespan::%{_u}%}
+
+function unbanip(ip: object):
+	delete {punish::ban::status::%{_ip}%}
+	delete {punish::ban::whenpunished::%{_ip}%}
+	delete {punish::ban::punisher::%{_ip}%}
+	delete {punish::ban::reason::%{_ip}%}
+	delete {punish::ban::timespan::%{_ip}%}
+
+function unmute(p: offline player):
+	set {_u} to uuid of {_p}
+	delete {punish::mute::status::%{_u}%}
+	delete {punish::mute::whenpunished::%{_u}%}
+	delete {punish::mute::punisher::%{_u}%}
+	delete {punish::mute::reason::%{_u}%}
+	delete {punish::mute::timespan::%{_u}%}
+	send "%nl%{@prefix} &7You have been unmuted!%nl%" to {_p}
+	play sound "block.note_block.pling" at pitch 2 to {_p}
+
+function clearChat():
+	loop 300 times:
+		broadcast ""
+
+function toggleChat():
+	if {chat::muted} is set:
+		delete {chat::muted}
+	else:
+		set {chat::muted} to true
+
+function punishTimeRemaining(p: offline player, punishment: text, ip: object = "test") :: text:
+	set {_u} to uuid of {_p}
+	if "%{_ip}%" is not "test":
+		set {_u} to {_ip}
+	if {punish::%{_punishment}%::status::%{_u}%} is not set:
+		return "N/A"
+	if "%{punish::%{_punishment}%::timespan::%{_u}%}%" contains "none" or "PERM":
+		return "Permanent"
+	set {_when} to {punish::%{_punishment}%::whenpunished::%{_u}%}
+	set {_now} to now
+	set {_timespan} to {punish::%{_punishment}%::timespan::%{_u}%}
+	set {_txt} to "%difference between {_timespan} after {_when} and now%"
+	set {_reverse} to "%difference between {_timespan} before {_when} and now%"
+	return {_txt}
