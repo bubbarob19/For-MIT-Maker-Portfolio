@@ -1,0 +1,1 @@
+This is a command API I made a while ago to streamline the process of creating custom commands you execute in chat (such as /buy, or /discord). It made it much faster and easier for me to create commands for a while, but I no longer use this API in my projects as it's somewhat limited in how much you can customize the commands.
