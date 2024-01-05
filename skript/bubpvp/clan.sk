@@ -1,0 +1,534 @@
+#----------------------------»
+#---------» Clans «----------»
+#----Written by bubbarob19---»
+#----------------------------»
+
+command /clan:
+	trigger:
+		clanMenu(player)
+
+# Clan variables:
+# {playerclan::%player's uuid%} - indicates player's clan
+# {clan::%clan name%::leader} - leader of de clan
+# {clan::%clan name%::players::*} - all players in the clan
+# {clan::%clan name%::mods::*} - all moderators in the clan
+# {clans::*} - list of all clans
+# {clan::%clan name%::points}
+# {clan::%clan name%::pointamount}
+# {clan::%clan name%::slots} - clan player slots
+# {clan::%clan name%::friendlyfire} - whether clan friendly fire is on or off
+
+function clanMenu(p: player):
+	set {_u} to uuid of {_p}
+	play sound "entity.chicken.egg" to {_p}
+	open virtual chest inventory with size 6 named "&3&lCLAN MENU" to {_p}
+	format gui slot (integers between 0 and 53) of {_p} with light gray stained glass pane named "&1"
+	format gui slot (integers between 0 and 9, 17, 18, 26, 27, 35, 36, and integers between 44 and 53) of {_p} with black stained glass pane named "&1"
+	format gui slot 20 of {_p} with lime concrete named "&3&lCREATE CLAN" to run:
+		if {playerclan::%{_u}%} is not set:
+			set {clantyping::%{_u}%} to true
+			close {_p}'s inventory
+			send "&3&lBubPVP: &fType the name of the clan you want to create in chat!" to {_p}
+		else:
+			send "&3&lBubPVP: &fYou are already in a clan! Leave or disband your current clan to create your own!"
+	format gui slot 21 of {_p} with white concrete named "&3&lRENAME CLAN" to run:
+		if {playerclan::%{_u}%} is set:
+			if {clan::%{playerclan::%{_u}%}%::leader} = {_u}:
+				set {clanrenaming::%{_u}%} to true
+				close {_p}'s inventory
+				remove {playerclan::%{_u}%} from {clans::*}
+				send "&3&lBubPVP: &fType the new clan name in chat!" to {_p}
+			else:
+				send "&3&lBubPVP: &fYou must be the clan leader to edit your clan's name!"
+		else:
+			send "&3&lBubPVP: &fYou must be in a clan to rename it!"
+	format gui slot 22 of {_p} with red concrete named "&3&lDISBAND CLAN" to run:
+		if {playerclan::%{_u}%} is set:
+			if {clan::%{playerclan::%{_u}%}%::leader} = {_u}:
+				set {_a} to {playerclan::%{_u}%}
+				send "&3&lBubPVP: &fYou disbanded your clan &8[&7%{playerclan::%{_u}%}%&8]!"
+				remove {_a} from {clans::*}
+				delete {clan::%{_a}%::moderators::*}
+				delete {clan::%{_a}%::leader}
+				delete {clan::%{_a}%::pointamount}
+				delete {clan::%{_a}%::slots}
+				delete {clan::%{_a}%::friendlyfire}
+				delete {clan::%{_a}%::points}
+				loop {clan::%{_a}%::players::*}:
+					send "%nl%&3&lBubPVP: &fYour clan has been disbanded by the leader!%nl%" to (loop-value parsed as an offline player)
+					play sound "block.note_block.pling" at pitch 0 to (loop-value parsed as an offline player)
+					delete {playerclan::%loop-value%}
+					delete {cc::%loop-value%}
+				delete {clan::%{_a}%::players::*}
+			else:
+				send "&3&lBubPVP: &fYou must be the clan leader to disband a clan!" to {_p}
+		else:
+			send "&3&lBubPVP: &fYou must be in a clan to disband it!"
+	format gui slot 23 of {_p} with cyan concrete named "&3&lINVITE PLAYERS" to run:
+		if {playerclan::%{_u}%} is set:
+			if {clan::%{playerclan::%{_u}%}%::moderators::*} contains player's uuid:
+				set {_hehe} to true
+			else if {clan::%{playerclan::%{_u}%}%::leader} is player's uuid:
+				set {_hehe} to true
+			if {_hehe} is true:
+				play sound "entity.chicken.egg" to {_p}
+				open virtual chest inventory with size 6 named "&3&lCHOOSE WHO TO INVITE" to {_p}
+				format gui slot (integers between 0 and 53) of {_p} with light gray stained glass pane named "&1"
+				set {_f::*} to all players
+				remove {_p} from {_f::*}
+				loop {_f::*}:
+					add 1 to {_n}
+					format gui slot ({_n} - 1) of {_p} with loop-value's head named "&3%loop-value%" to close:
+						set {_i} to name of event-item
+						replace all "&3" in {_i} with ""
+						set {_k} to {_i} parsed as an offline player
+						set {_ku} to uuid of {_k}
+						if {playerclan::%{_ku}%} is not set:
+							send "&3&lBubPVP: &fYou invited &3%{_k}% &fto your clan! They have 30 seconds to accept!" to player
+							set {clanaccepting::%{playerclan::%{_u}%}%::%{_ku}%} to true
+							send "%nl%&b&lCLAN: &f%{_p}% &7invited you to their clan, &8[&7%{playerclan::%{_u}%}%&8]!%nl%" to {_k}
+							set {_t} to text component from "&a&l[CLICK HERE] &7to accept"
+							set hover event of {_t} to a new hover event showing "&aAccept the invite"
+							set click event of {_t} to a new click event to run command "/clanaccept %{playerclan::%{_u}%}%"
+							send component {_t} to {_k}
+							set {_t} to text component from "&c&l[CLICK HERE] &7to deny"
+							set hover event of {_t} to a new hover event showing "&cDeny the invite"
+							set click event of {_t} to a new click event to run command "/clandeny %{playerclan::%{_u}%}%"
+							send component {_t} to {_k}
+							send "&1" to {_k}
+							wait 1 minute
+							delete {clanaccepting::%{playerclan::%{_u}%}%::%{_ku}%}
+						else:
+							send "&3&lBubPVP: &fThis player is already in a clan!" to player
+			else:
+				send "&3&lBubPVP: &fYou must be a moderator or higher in your clan to invite players to the clan!" to {_p}
+		else:
+			send "&3&lBubPVP: &fYou must be in a clan to invite someone!" to {_p}
+	format gui slot 24 of {_p} with gray concrete named "&3&lLEAVE CLAN" to run:
+		if {playerclan::%player's uuid%} is set:
+			if {clan::%{playerclan::%player's uuid%}%::leader} is not player's uuid:
+				send "&3&lBubPVP: &fYou successfully left the clan &8[&7%{playerclan::%player's uuid%}%&8]!" to player
+				remove player's uuid from {clan::%{playerclan::%player's uuid%}%::players::*}
+				if {clan::%{playerclan::%player's uuid%}%::moderators::*} contains {_u}:
+					remove {_u} from {clan::%{playerclan::%player's uuid%}%::moderators::*}
+				loop {clan::%{playerclan::%player's uuid%}%::players::*}:
+					send "%nl%&3&lBubPVP: &f%{_p}% &7left the clan!%nl%" to (loop-value parsed as an offline player)
+					play sound "entity.arrow.hit_player" at pitch 0 to (loop-value parsed as an offline player)
+				delete {playerclan::%player's uuid%}
+				delete {cc::%player's uuid%}
+			else:
+				send "&3&lBubPVP: &fYou cannot leave your own clan! Disband it if you want to create a new clan!" to player
+		else:
+			send "&3&lBubPVP: &fYou must be in a clan to leave one!" to player
+	if {playerclan::%{_u}%} is set:
+		if {clan::%{playerclan::%{_u}%}%::friendlyfire} is false:
+			format gui slot 29 of {_p} with light gray concrete named "&3&lTOGGLE FRIENDLY FIRE" with lore "&f&lCURRENT STATUS: &4&lOFF" to run:
+				fftoggle({_p})
+		else:
+			format gui slot 29 of {_p} with light gray concrete named "&3&lTOGGLE FRIENDLY FIRE" with lore "&f&lCURRENT STATUS: &a&lON" to run:
+				fftoggle({_p})
+	else:
+		format gui slot 29 of {_p} with light gray concrete named "&3&lTOGGLE FRIENDLY FIRE" with lore "&f&lCURRENT STATUS: &7&lNA"
+	format gui slot 30 of {_p} with light blue concrete named "&3&lCLAN INFO" to run:
+		if {playerclan::%{_u}%} is set:
+			open virtual chest inventory with size 3 named "&3&lCLAN INFO - &8[&7%{playerclan::%{_u}%}%&8]" to {_p}
+			play sound "entity.chicken.egg" to {_p}
+			format gui slot (integers between 0 and 26) of {_p} with light gray stained glass pane named "&1"
+			format gui slot 22 of {_p} with barrier named "&4Back to Menu" to run:
+				clanMenu({_p})
+			format gui slot 10 of {_p} with book named "&3Clan Leader:" with lore "&f%{clan::%{playerclan::%{_u}%}%::leader} parsed as an offline player%"
+			set {_i} to a book named "&3Clan Moderators:"
+			loop {clan::%{playerclan::%{_u}%}%::moderators::*}:
+				add 1 to {_n}
+				set line {_n} of {_i}'s lore to "&f%loop-value parsed as an offline player%"
+			format gui slot 11 of {_p} with {_i}
+			set {_j} to a book named "&3All Clan Members:"
+			loop {clan::%{playerclan::%{_u}%}%::players::*}:
+				add 1 to {_nm}
+				set line {_nm} of {_j}'s lore to "&f%loop-value parsed as an offline player%"
+			format gui slot 12 of {_p} with {_j}
+			format gui slot 13 of {_p} with book named "&3Clan Slots:" with lore "&fTotal: %{clan::%{playerclan::%{_u}%}%::slots}%", "&fSlots Filled: %size of {clan::%{playerclan::%{_u}%}%::players::*}%" and "&fSlots Available: %{clan::%{playerclan::%{_u}%}%::slots} - size of {clan::%{playerclan::%{_u}%}%::players::*}%"
+			if {clan::%{playerclan::%{_u}%}%::friendlyfire} is true:
+				format gui slot 14 of {_p} with book named "&3Friendly Fire: &a&lON"
+			else:
+				format gui slot 14 of {_p} with book named "&3Friendly Fire: &4&lOFF"
+			format gui slot 15 of {_p} with book named "&3Clan Points: &f%{clan::%{playerclan::%{_u}%}%::points}%"
+			format gui slot 16 of {_p} with book named "&3Clan Point Amount: &f%{clan::%{playerclan::%{_u}%}%::pointamount}%" with lore "&7(Amount of clan points you get" and "&7every 15 minutes for being online)"
+		else:
+			send "&3&lBubPVP: &fYou are not in a clan right now!" to {_p}
+	format gui slot 31 of {_p} with green concrete named "&3&lCLAN ROLES" to run:
+		if {playerclan::%{_u}%} is set:
+			if {clan::%{playerclan::%{_u}%}%::moderators::*} contains player's uuid:
+				set {_hehe} to true
+			else if {clan::%{playerclan::%{_u}%}%::leader} is player's uuid:
+				set {_hehe} to true
+			if {_hehe} is true:
+				open virtual chest inventory with size 3 named "&3&lCLAN ROLES / KICK" to {_p}
+				format gui slot (integers between 0 and 26) of {_p} with light gray stained glass pane named "&1"
+				format gui slot 10 of {_p} with red concrete named "&4&lKICK" to run:
+					play sound "entity.chicken.egg" to {_p}
+					open virtual chest inventory with size 3 named "&3&lKICK" to {_p}
+					format gui slot (integers between 0 and 26) of {_p} with light gray stained glass pane named "&1"
+					set {_f::*} to {clan::%{playerclan::%player's uuid%}%::players::*}
+					remove {_u} from {_f::*}
+					remove {clan::%{playerclan::%{_u}%}%::leader} from {_f::*}
+					loop {clan::%{playerclan::%{_u}%}%::moderators::*}:
+						remove loop-value from {_f::*}
+					loop {_f::*}:
+						add 1 to {_n}
+						format gui slot ({_n} - 1) of {_p} with (loop-value parsed as an offline player's head) named "&3%loop-value parsed as an offline player%" to close:
+							set {_i} to name of event-item
+							replace all "&3" in {_i} with ""
+							set {_k} to {_i} parsed as an offline player
+							set {_ku} to uuid of {_k}
+							send "%nl%&3&lBubPVP: &fYou were kicked from the clan &8[&7%{playerclan::%player's uuid%}%&8] &fby &3%{_p}%!%nl%" to {_k}
+							delete {playerclan::%{_ku}%}
+							remove {_ku} from {clan::%{playerclan::%player's uuid%}%::players::*}
+							delete {cc::%{_ku}%}
+							if {clan::%{playerclan::%player's uuid%}%::moderators::*} contains {_ku}:
+								remove {_ku} from {clan::%{playerclan::%player's uuid%}%::moderators::*}
+							loop {clan::%{playerclan::%player's uuid%}%::players::*}:
+								send "%nl%&3&lBubPVP: &f%{_k}% &7was kicked from the clan by &f%{_p}%!%nl%" to (loop-value-2 parsed as an offline player)
+								play sound "entity.arrow.hit_player" at pitch 0 to (loop-value-2 parsed as an offline player)	
+				format gui slot 13 of {_p} with yellow concrete named "&e&lDEMOTE" to run:
+					play sound "entity.chicken.egg" to {_p}
+					open virtual chest inventory with size 3 named "&3&lDEMOTE" to {_p}
+					format gui slot (integers between 0 and 26) of {_p} with light gray stained glass pane named "&1"
+					if {clan::%{playerclan::%{_u}%}%::leader} is {_u}:
+						set {_f::*} to {clan::%{playerclan::%{_u}%}%::moderators::*}
+						loop {_f::*}:
+							add 1 to {_n}
+							format gui slot ({_n} - 1) of {_p} with (loop-value parsed as an offline player's head) named "&3%loop-value parsed as an offline player%" to close:
+								set {_i} to name of event-item
+								replace all "&3" in {_i} with ""
+								set {_k} to {_i} parsed as an offline player
+								set {_ku} to uuid of {_k}
+								send "%nl%&3&lBubPVP: &fYou were demoted in the clan &8[&7%{playerclan::%player's uuid%}%&8] &fto clan default by &3%{_p}%!%nl%" to {_k}
+								remove {_ku} from {clan::%{playerclan::%player's uuid%}%::moderators::*}
+								set {_ff::*} to {clan::%{playerclan::%player's uuid%}%::players::*}
+								remove {_ku} from {_ff::*}
+								loop {_ff::*}:
+									send "%nl%&3&lBubPVP: &f%{_k}% &7was demoted to clan default by &f%{_p}%!%nl%" to (loop-value-2 parsed as an offline player)
+									play sound "entity.arrow.hit_player" at pitch 0 to (loop-value-2 parsed as an offline player)
+					else:
+						send "&3&lBubPVP: &fYou must be the leader of the clan to demote people!"
+				format gui slot 16 of {_p} with lime concrete named "&a&lPROMOTE" to run:
+					play sound "entity.chicken.egg" to {_p}
+					open virtual chest inventory with size 3 named "&3&lPROMOTE" to {_p}
+					format gui slot (integers between 0 and 26) of {_p} with light gray stained glass pane named "&1"
+					if {clan::%{playerclan::%{_u}%}%::leader} is {_u}:
+						set {_f::*} to {clan::%{playerclan::%{_u}%}%::players::*}
+						remove {_u} from {_f::*}
+						loop {_f::*}:
+							add 1 to {_n}
+							format gui slot ({_n} - 1) of {_p} with (loop-value parsed as an offline player's head) named "&3%loop-value parsed as an offline player%" to close:
+								set {_i} to name of event-item
+								replace all "&3" in {_i} with ""
+								set {_k} to {_i} parsed as an offline player
+								set {_ku} to uuid of {_k}
+								send "%nl%&3&lBubPVP: &fYou were promoted in the clan &8[&7%{playerclan::%player's uuid%}%&8] &fto clan moderator by &3%{_p}%!%nl%" to {_k}
+								add {_ku} to {clan::%{playerclan::%player's uuid%}%::moderators::*}
+								set {_ff::*} to {clan::%{playerclan::%player's uuid%}%::players::*}
+								remove {_ku} from {_ff::*}
+								loop {_ff::*}:
+									send "%nl%&3&lBubPVP: &f%{_k}% &7was promoted by &f%{_p}% &7to clan moderator!%nl%" to (loop-value-2 parsed as an offline player)
+									play sound "entity.arrow.hit_player" at pitch 2 to (loop-value-2 parsed as an offline player)
+					else:
+						send "&3&lBubPVP: &fYou must be the leader of the clan to promote people!"
+			else:
+				send "&3&lBubPVP: &fYou must be a clan moderator or higher to access this panel!"
+		else:
+			send "&3&lBubPVP: &fYou must be in a clan to manage clan roles!" to {_p}
+	format gui slot 32 of {_p} with yellow concrete named "&3&lCLAN UPGRADES" to run:
+		play sound "entity.chicken.egg" to {_p}
+		open virtual chest inventory with size 3 named "&3&lCLAN UPGRADES" to {_p}
+		format gui slot (integers between 0 and 26) of {_p} with light gray stained glass pane named "&1"
+		if {clan::%{playerclan::%{_u}%}%::slots} is 10:
+			format gui slot 10 of {_p} with magenta glazed terracotta named "&3Increase Clan Slots" with lore "&fCurrent Slots: 10" and "&4&lALREADY MAXED"
+		else:
+			format gui slot 10 of {_p} with magenta glazed terracotta named "&3Increase Clan Slots" with lore "&fCurrent Slots: %{clan::%{playerclan::%{_u}%}%::slots}%", "&fClan Points Required: %(({clan::%{playerclan::%{_u}%}%::slots} * 75) + ceil((2.25^{clan::%{playerclan::%{_u}%}%::slots}) * 5))%" and "&fNext Upgrade: &7[ %{clan::%{playerclan::%{_u}%}%::slots}% --> %{clan::%{playerclan::%{_u}%}%::slots} + 1% ]" to run:
+				if {clan::%{playerclan::%{_u}%}%::moderators::*} contains {_u}:
+					set {_hehe} to true
+				else if {clan::%{playerclan::%{_u}%}%::leader} is {_u}:
+					set {_hehe} to true
+				if {_hehe} is true:
+					if {clan::%{playerclan::%{_u}%}%::points} is greater than or equal to (({clan::%{playerclan::%{_u}%}%::slots} * 75) + ceil((2.25^{clan::%{playerclan::%{_u}%}%::slots}) * 5)):
+						subtract (({clan::%{playerclan::%{_u}%}%::slots} * 75) + ceil((2.25^{clan::%{playerclan::%{_u}%}%::slots}) * 5)) from {clan::%{playerclan::%{_u}%}%::points}
+						add 1 to {clan::%{playerclan::%{_u}%}%::slots}
+						close {_p}'s inventory
+						loop {clan::%{playerclan::%{_u}%}%::players::*}:
+							send "%nl%&3&lBubPVP: &fYour clan added a player slot!%nl%&3[ &3%{clan::%{playerclan::%{_u}%}%::slots} - 1% &3--> &3%{clan::%{playerclan::%{_u}%}%::slots}% &3]!" to loop-value parsed as an offline player
+							play sound "block.note_block.pling" at pitch 2 to loop-value parsed as an offline player
+							if name of (loop-value parsed as an offline player)'s current inventory is "&3&lCLAN UPGRADES":
+								close (loop-value parsed as an offline player)'s inventory
+					else:
+						send "&3&lBubPVP: &fYou do not have enough clan points for this!"
+				else:	
+					send "&3&lBubPVP: &fYou must be clan moderator or higher to upgrade your clan!" to {_p}
+		format gui slot 13 of {_p} with paper named "&3Current Clan Points: &f%{clan::%{playerclan::%{_u}%}%::points}%"
+		if {clan::%{playerclan::%{_u}%}%::pointamount} is 20:
+			format gui slot 16 of {_p} with emerald named "&3Increase Clan Point Amount" with lore "&7(Amount of clan points you get", "&7every 15 minutes for being online)", "&fCurrent Clan Point Amount: 20" and "&4&lALREADY MAXED"
+		else:
+			format gui slot 16 of {_p} with emerald named "&3Increase Clan Point Amount" with lore "&7(Amount of clan points you get", "&7every 15 minutes for being online)", "&fCurrent Clan Point Amount: %{clan::%{playerclan::%{_u}%}%::pointamount}%", "&fClan Points Required: %(({clan::%{playerclan::%{_u}%}%::pointamount} * 30) + ceil(12^({clan::%{playerclan::%{_u}%}%::pointamount} / 5)))%", and "&fNext Upgrade: &7[ %{clan::%{playerclan::%{_u}%}%::pointamount}% --> %{clan::%{playerclan::%{_u}%}%::pointamount} + 2% ]" to run:
+				if {clan::%{playerclan::%{_u}%}%::moderators::*} contains {_u}:
+					set {_hehe} to true
+				else if {clan::%{playerclan::%{_u}%}%::leader} is {_u}:
+					set {_hehe} to true
+				if {_hehe} is true:
+					if {clan::%{playerclan::%{_u}%}%::points} is greater than or equal to (({clan::%{playerclan::%{_u}%}%::pointamount} * 30) + ceil(12^({clan::%{playerclan::%{_u}%}%::pointamount} / 5))):
+						subtract (({clan::%{playerclan::%{_u}%}%::pointamount} * 30) + ceil(12^({clan::%{playerclan::%{_u}%}%::pointamount} / 5))) from {clan::%{playerclan::%{_u}%}%::points}
+						add 2 to {clan::%{playerclan::%{_u}%}%::pointamount}
+						close {_p}'s inventory
+						loop {clan::%{playerclan::%{_u}%}%::players::*}:
+							send "%nl%&3&lBubPVP: &fYour clan increased it's clan point amount!%nl%&3[ %{clan::%{playerclan::%{_u}%}%::pointamount} - 2% &3--> &3%{clan::%{playerclan::%{_u}%}%::pointamount}% &3]!" to loop-value parsed as an offline player
+							play sound "block.note_block.pling" at pitch 2 to loop-value parsed as an offline player
+							if name of (loop-value parsed as an offline player)'s current inventory is "&3&lCLAN UPGRADES":
+								close (loop-value parsed as an offline player)'s inventory
+					else:
+						send "&3&lBubPVP: &fYou do not have enough clan points for this!"
+				else:
+					send "&3&lBubPVP: &fYou must be clan moderator or higher to upgrade your clan!" to {_p}
+	if {cc::%{_u}%} is set:
+		format gui slot 33 of {_p} with blue concrete named "&3&lTOGGLE CLAN CHAT" with lore "&f&lCURRENT STATUS: &a&lON" to run:
+			togglecc({_p})
+	else:
+		format gui slot 33 of {_p} with blue concrete named "&3&lTOGGLE CLAN CHAT" with lore "&f&lCURRENT STATUS: &4&lOFF" to run:
+			togglecc({_p})
+
+function togglecc(p: player):
+	set {_u} to uuid of {_p}
+	if {playerclan::%{_u}%} is set:
+		if {cc::%{_u}%} is true:
+			delete {cc::%{_u}%}
+			send "&3&lBubPVP: &fYou have turned clan chat &4&lOFF!" to {_p}
+			play sound "entity.arrow.hit_player" at pitch 1 to {_p}
+			format gui slot 33 of {_p} with blue concrete named "&3&lTOGGLE CLAN CHAT" with lore "&f&lCURRENT STATUS: &4&lOFF" to run:
+				togglecc({_p})
+		else:
+			set {cc::%{_u}%} to true
+			send "&3&lBubPVP: &fYou have turned clan chat &a&lON!" to {_p}
+			play sound "entity.arrow.hit_player" at pitch 2 to {_p}
+			format gui slot 33 of {_p} with blue concrete named "&3&lTOGGLE CLAN CHAT" with lore "&f&lCURRENT STATUS: &a&lON" to run:
+				togglecc({_p})
+	else:
+		send "&3&lBubPVP: &fYou must be in a clan to toggle clan chat!" to {_p}
+
+command /cc:
+	trigger:
+		if {playerclan::%player's uuid%} is set:
+			if {cc::%player's uuid%} is true:
+				delete {cc::%player's uuid%}
+				send "&3&lBubPVP: &fYou have turned clan chat &4&lOFF!" to player
+				play sound "entity.arrow.hit_player" at pitch 1 to player
+			else:
+				set {cc::%player's uuid%} to true
+				send "&3&lBubPVP: &fYou have turned clan chat &a&lON!" to player
+				play sound "entity.arrow.hit_player" at pitch 2 to player
+		else:
+			send "&3&lBubPVP: &fYou must be in a clan to toggle clan chat!" to {_p}
+
+every 15 minutes in world "mineworld":
+	loop all players:
+		if {playerclan::%loop-player's uuid%} is set:
+			add {clan::%{playerclan::%loop-player's uuid%}%::pointamount} to {clan::%{playerclan::%loop-player's uuid%}%::points}
+			send "&3&lBubPVP: &fYou earned &3%{clan::%{playerclan::%loop-player's uuid%}%::pointamount}% &fclan points for your clan by being active!" to loop-player
+
+function fftoggle(p: player):
+	set {_u} to uuid of {_p}
+	if {playerclan::%{_u}%} is set:
+		if {clan::%{playerclan::%{_u}%}%::moderators::*} contains {_u}:
+			set {_hehe} to true
+		else if {clan::%{playerclan::%{_u}%}%::leader} is {_u}:
+			set {_hehe} to true
+		if {_hehe} is true:
+			if {clan::%{playerclan::%{_u}%}%::friendlyfire} is false:
+				set {clan::%{playerclan::%{_u}%}%::friendlyfire} to true
+				loop {clan::%{playerclan::%{_u}%}%::players::*}:
+					send "%nl%&3&lBubPVP: &fFriendly Fire for your clan has been turned &a&lON%nl%" to (loop-value parsed as an offline player)
+					play sound "entity.arrow.hit_player" at pitch 2 to (loop-value parsed as an offline player)
+				format gui slot 29 of {_p} with light gray concrete named "&3&lTOGGLE FRIENDLY FIRE" with lore "&f&lCURRENT STATUS: &a&lON" to run:
+					fftoggle({_p})
+			else:
+				set {clan::%{playerclan::%{_u}%}%::friendlyfire} to false
+				loop {clan::%{playerclan::%{_u}%}%::players::*}:
+					send "%nl%&3&lBubPVP: &fFriendly Fire for your clan has been turned &4&lOFF%nl%" to (loop-value parsed as an offline player)
+					play sound "entity.arrow.hit_player" at pitch 2 to (loop-value parsed as an offline player)
+				format gui slot 29 of {_p} with light gray concrete named "&3&lTOGGLE FRIENDLY FIRE" with lore "&f&lCURRENT STATUS: &4&lOFF" to run:
+					fftoggle({_p})
+		else:
+			send "&3&lBubPVP: &fYou must be a clan moderator or higher to toggle friendly fire!" to {_p}
+	else:
+		send "&3&lBubPVP: &fYou must be in a clan to toggle friendly fire!" to {_p}
+
+on damage:
+	if {playerclan::%victim's uuid%} is set:
+		if {clan::%{playerclan::%victim's uuid%}%::players::*} contains attacker's uuid:
+			if {clan::%{playerclan::%victim's uuid%}%::friendlyfire} is false:
+				cancel event
+
+on chat:
+	if {clanrenaming::%player's uuid%} is set:
+		stop
+	else if {clantyping::%player's uuid%} is set:
+		stop
+	else if {p::%player's uuid%} is set:
+		stop
+	if {cc::%player's uuid%} is set:
+		cancel event
+		loop {clan::%{playerclan::%player's uuid%}%::players::*}:
+			send "&b&lCC &f| &8[&7%player's level%&8] %player's prefix% &7%player's displayname% &8» &b%message%" to loop-value parsed as an offline player
+
+command /claninvite:
+	trigger:
+		set {_u} to player's uuid
+		set {_p} to player
+		if {playerclan::%{_u}%} is set:
+			if {clan::%{playerclan::%{_u}%}%::moderators::*} contains player's uuid:
+				set {_hehe} to true
+			else if {clan::%{playerclan::%{_u}%}%::leader} is player's uuid:
+				set {_hehe} to true
+			if {_hehe} is true:
+				play sound "entity.chicken.egg" to {_p}
+				open virtual chest inventory with size 6 named "&3&lCHOOSE WHO TO INVITE" to {_p}
+				format gui slot (integers between 0 and 53) of {_p} with light gray stained glass pane named "&1"
+				set {_f::*} to all players
+				remove {_p} from {_f::*}
+				loop {_f::*}:
+					add 1 to {_n}
+					format gui slot ({_n} - 1) of {_p} with loop-value's head named "&3%loop-value%" to close:
+						set {_i} to name of event-item
+						replace all "&3" in {_i} with ""
+						set {_k} to {_i} parsed as an offline player
+						set {_ku} to uuid of {_k}
+						if {playerclan::%{_ku}%} is not set:
+							send "&3&lBubPVP: &fYou invited &3%{_k}% &fto your clan! They have 30 seconds to accept!" to player
+							set {clanaccepting::%{playerclan::%{_u}%}%::%{_ku}%} to true
+							send "%nl%&b&lCLAN: &f%{_p}% &7invited you to their clan, &8[&7%{playerclan::%{_u}%}%&8]!%nl%" to {_k}
+							set {_t} to text component from "&a&l[CLICK HERE] &7to accept"
+							set hover event of {_t} to a new hover event showing "&aAccept the invite"
+							set click event of {_t} to a new click event to run command "/clanaccept %{playerclan::%{_u}%}%"
+							send component {_t} to {_k}
+							set {_t} to text component from "&c&l[CLICK HERE] &7to deny"
+							set hover event of {_t} to a new hover event showing "&cDeny the invite"
+							set click event of {_t} to a new click event to run command "/clandeny %{playerclan::%{_u}%}%"
+							send component {_t} to {_k}
+							send "&1" to {_k}
+							wait 1 minute
+							delete {clanaccepting::%{playerclan::%{_u}%}%::%{_ku}%}
+						else:
+							send "&3&lBubPVP: &fThis player is already in a clan!" to player
+			else:
+				send "&3&lBubPVP: &fYou must be a moderator or higher in your clan to invite players to the clan!" to {_p}
+		else:
+			send "&3&lBubPVP: &fYou must be in a clan to invite someone!" to {_p}
+
+command /clandeny <text>:
+	trigger:
+		loop {clans::*}:
+			if arg-1 is loop-value:
+				set {_a} to loop-value
+				stop loop
+		if {clanaccepting::%{_a}%::%player's uuid%} is true:
+			delete {clanaccepting::%{_a}%::%player's uuid%}
+			send "&3&lBubPVP: &fYou denied the request to join the clan &8[&7%{_a}%&8]!" to player
+		else:
+			send "&3&lBubPVP: &fThis request expired!" to player
+
+command /clanaccept <text>:
+	trigger:
+		loop {clans::*}:
+			if arg-1 is loop-value:
+				set {_a} to loop-value
+				stop loop
+		if {clanaccepting::%{_a}%::%player's uuid%} is true:
+			if {playerclan::%player's uuid%} is not set:
+				if size of {clan::%{_a}%::players::*} is less than {clan::%{_a}%::slots}:
+					delete {clanaccepting::%{_a}%::%player's uuid%}
+					send "&3&lBubPVP: &fYou joined the clan &8[&7%{_a}%&8]!"
+					set {playerclan::%player's uuid%} to {_a}
+					loop all players:
+						if {clan::%{_a}%::players::*} contains loop-player's uuid:
+							send "%nl%&3&lBubPVP: &f%player% &7joined the clan!%nl%" to loop-player
+							play sound "entity.arrow.hit_player" at pitch 2 to loop-player
+					add player's uuid to {clan::%{_a}%::players::*}
+				else:
+					send "&3&lBubPVP: &fThis clan is full! They must upgrade their slot count before you can join!"
+			else:
+				send "&3&lBubPVP: &fYou are already in a clan!" to player
+		else:
+			send "&3&lBubPVP: &fThis request expired!" to player
+
+on chat:
+	if {clantyping::%player's uuid%} is true:
+		cancel event
+		if {playerclan::%player's uuid%} is set:
+			delete {clantyping::%player's uuid%}
+			send "&3&lBubPVP: &fYou are already in a clan!" to player
+			stop
+		if message's length is greater than 8:
+			send "&3&lBubPVP: &fThis clan name is too long! &7(Clan name must be 8 characters or less)" to player
+		else:
+			if {clan::%uncolored message%::leader} is not set:
+				add "%uncolored message%" to {clans::*}
+				set {clan::%uncolored message%::leader} to player's uuid
+				send "&3&lBubPVP: &fYou have successfully created the clan &8[&7%uncolored message%&8]&f!" to player
+				add player's uuid to {clan::%uncolored message%::players::*}
+				set {playerclan::%player's uuid%} to uncolored message
+				delete {clantyping::%player's uuid%}
+				set {clan::%uncolored message%::points} to 0
+				set {clan::%uncolored message%::pointamount} to 10
+				set {clan::%uncolored message%::slots} to 3
+				set {clan::%uncolored message%::friendlyfire} to false
+			else:
+				send "&3&lBubPVP: &fThis is already a clan!" to player
+	else if {clanrenaming::%player's uuid%} is true:
+		cancel event
+		if {clan::%{playerclan::%player's uuid%}%::leader} is not player's uuid:
+			delete {clanrenaming::%player's uuid%}
+			send "&3&lBubPVP: &fYou are not the leader of this clan! You cannot do this!" to player
+		if message's length is greater than 8:
+			send "&3&lBubPVP: &fThis clan name is too long! &7(Clan name must be 8 characters or less)" to player
+		else:
+			if {clan::%uncolored message%::leader} is not set:
+				add "%uncolored message%" to {clans::*}
+				remove "%{playerclan::%player's uuid%}%" from {clans::*}
+				set {_leader} to {clan::%{playerclan::%player's uuid%}%::leader}
+				delete {clan::%{playerclan::%player's uuid%}%::leader}
+				set {clan::%uncolored message%::leader} to {_leader}
+				set {_pointamount} to {clan::%{playerclan::%player's uuid%}%::pointamount}
+				delete {clan::%{playerclan::%player's uuid%}%::pointamount}
+				set {clan::%uncolored message%::pointamount} to {_pointamount}
+				set {_points} to {clan::%{playerclan::%player's uuid%}%::points}
+				delete {clan::%{playerclan::%player's uuid%}%::points}
+				set {clan::%uncolored message%::points} to {_points}
+				set {_slots} to {clan::%{playerclan::%player's uuid%}%::slots}
+				delete {clan::%{playerclan::%player's uuid%}%::slots}
+				set {clan::%uncolored message%::slots} to {_slots}
+				set {_friendlyfire} to {clan::%{playerclan::%player's uuid%}%::friendlyfire}
+				delete {clan::%{playerclan::%player's uuid%}%::friendlyfire}
+				set {clan::%uncolored message%::friendlyfire} to {_friendlyfire}
+				loop {clan::%{playerclan::%player's uuid%}%::players::*}:
+					set {_clanplayers::%loop-index%} to {clan::%{playerclan::%player's uuid%}%::players::%loop-index%}
+					delete {clan::%{playerclan::%player's uuid%}%::players::%loop-index%}
+					set {clan::%uncolored message%::players::%loop-index%} to {_clanplayers::%loop-index%}
+				loop {clan::%{playerclan::%player's uuid%}%::moderators::*}:
+					set {_clanmoderators::%loop-index%} to {clan::%{playerclan::%player's uuid%}%::moderators::%loop-index%}
+					delete {clan::%{playerclan::%player's uuid%}%::moderators::%loop-index%}
+					set {clan::%uncolored message%::moderators::%loop-index%} to {_clanmoderators::%loop-index%}
+				loop {clan::%uncolored message%::players::*}:
+					send "%nl%&3&lBubPVP: &fYour clan was renamed to &8[&7%uncolored message%&8]!%nl%" to (loop-value parsed as an offline player)
+					play sound "block.note_block.pling" at pitch 2 to (loop-value parsed as an offline player)
+					set {playerclan::%loop-value%} to uncolored message
+				delete {clanrenaming::%player's uuid%}
+			else:
+				send "&3&lBubPVP: &fThis is already a clan!" to player
+
+command /setclanpoint <offline player> <integer>:
+	permission: op
+	permission message: &cYou are not permitted to perform this command!
+	trigger:
+		if {playerclan::%arg-1's uuid%} is set:
+			set {clan::%{playerclan::%arg-1's uuid%}%::points} to arg-2
+			send "&3&lBubPVP: &fYou successfully set the clan point amount of clan &8[&7%{playerclan::%arg-1's uuid%}%&8] &fto &3%arg-2%!" to player
+		else:
+			send "&4ERROR: &cThis player is not in a clan!" to player

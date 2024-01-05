@@ -1,0 +1,462 @@
+#BubPVP MINE
+
+#mine.sk
+
+#MINES
+#1. 85 stone 10 coal 5 iron
+#2. 65 coal 25 stone 10 iron
+#3. 60 iron 15 coal 15 stone 10 lapis
+#4. 55 lapis 35 redstone 10 stone
+#5. 40 redstone 30 gold 10 coal 20 stone
+#6. 60 gold 20 iron 20 stone
+#7. 60 emerald 30 diamond 10 stone
+#8. 50 diamond 35 ancient debris 10 stone
+#9. 85 ancient debris 15 obsidian
+#10. 100 obsidian
+#11. 100 obsidian
+#12. 100 obsidian
+
+command /createmine <text> <text> <string>:
+	usage: &c/createmine <mine name> < <block>(<percent>),addvalue > <HOLOGRAM NAME>
+	permission: skript.createmine
+	permission message: &cYou are not permitted to perform this command!
+	trigger:
+		if {minelist::*} does not contain arg-1:
+			execute player command "/mrl create %arg-1%"
+			set {_mine::*} to arg-2 split by ","
+			loop {_mine::*}:
+				set {_val} to loop-value
+				replace all ")" in {_val} with ""
+				replace all "(" in {_val} with " "
+				set {_value::*} to {_val} split by " "
+				execute player command "/mrl set %arg-1% %{_value::1}% %{_value::2}%%%"
+			execute player command "/mrl flag %arg-1% isSilent true"
+			execute player command "/mrl flag %arg-1% resetDelay 3"
+			execute player command "/mrl reschedule"
+			set {_num} to 1
+			loop indices of {minelist::*}:
+				add loop-value to {_list::*}
+			while {_list::*} contains "mine%{_num}%":
+				add 1 to {_num}
+			set {_rg} to "mine%{_num}%"
+			execute player command "/rg create %{_rg}%"
+			execute player command "/rg flag %{_rg}% block-break allow"
+			set {minelist::%{_rg}%} to arg-1
+			execute player command "/holo create %{_rg}% %arg-3%"
+			loop {_mine::*}:
+				set {_val} to loop-value
+				replace all ")" in {_val} with ""
+				replace all "(" in {_val} with " "
+				set {_value::*} to {_val} split by " "
+				execute player command "/holo addline %{_rg}% &7(&f%{_value::2}%%% &f%formatHolo({_value::1})%&7)"
+		else:
+			send "&4ERROR: &cThis is already a mine!" to player
+
+function formatHolo(t: text) :: text:
+	replace all "stone" in {_t} with "Stone"
+	replace all "coal_ore" in {_t} with "Coal Ore"
+	replace all "coal_block" in {_t} with "Coal Block"
+	replace all "iron_ore" in {_t} with "Iron Ore"
+	replace all "iron_block" in {_t} with "Iron Block"
+	replace all "lapis_ore" in {_t} with "Lapis Ore"
+	replace all "lapis_block" in {_t} with "Lapis Block"
+	replace all "redstone_ore" in {_t} with "Redstone Ore"
+	replace all "redstone_block" in {_t} with "Redstone Block"
+	replace all "gold_ore" in {_t} with "Gold Ore"
+	replace all "gold_block" in {_t} with "Gold Block"
+	replace all "emerald_ore" in {_t} with "Emerald Ore"
+	replace all "emerald_block" in {_t} with "Emerald Block"
+	replace all "diamond_ore" in {_t} with "Diamond Ore"
+	replace all "diamond_block" in {_t} with "Diamond Block"
+	replace all "ancient_debris" in {_t} with "Ancient Debris"
+	replace all "netherite_block" in {_t} with "Netherite Block"
+	replace all "obsidian" in {_t} with "Obsidian"
+	replace all "crying_obsidian" in {_t} with "Crying Obsidian"
+	return {_t}
+
+command /deletemine <text>:
+	permission: skript.deletemine
+	permission message: &cYou are not permitted to perform this command!
+	trigger:
+		if {minelist::*} contains arg-1:
+			loop {minelist::*}:
+				if {minelist::%loop-index%} is arg-1:
+					set {_rg} to loop-index
+					stop loop
+			remove arg-1 from {minelist::*}
+			execute player command "/rg delete %{_rg}%"
+			execute player command "/holo delete %{_rg}%"
+			execute player command "/mrl erase %arg-1%"
+			send "&3&lBubPVP: &fYou successfully deleted the mine &3%arg-1%&3!"
+		else:
+			send "&4ERROR: &cThis is not a mine!"
+
+command /mines:
+	permission: skript.mines
+	permission message: &cYou are not permitted to perform this command!
+	trigger:
+		set {_n} to 0
+		loop {minelist::*}:
+			add 1 to {_n}
+			if {_n} is 1:
+				set {_msg} to "%nl%&3&lBubPVP Mines:%nl%%nl%"
+			set {_msg} to "%{_msg}%&fRegion: &7%loop-index% &8| &fMine: &7%loop-value%%nl%"
+		play sound "entity.arrow.hit_player" at pitch 2 to player
+		send "%{_msg}%" to player
+
+command /minetoggle:
+	permission: skript.minetoggle
+	permission message: &cHey! You can't do that!
+	trigger:
+		if {minetoggle::%player's uuid%} is set:
+			delete {minetoggle::%player's uuid%}
+			send "&3&lBubPVP: &fYou have enabled the mines!" to player
+		else:
+			set {minetoggle::%player's uuid%} to true
+			send "&3&lBubPVP: &fYou have disabled the mines!" to player
+
+on break:
+	if event-block is stone or coal ore or iron ore or lapis ore or redstone ore or emerald ore or diamond ore or gold ore or ancient debris or obsidian or crying obsidian or netherite block or diamond block or emerald block or redstone block or gold block or lapis block or iron block or coal block:
+		stop
+	else:
+		player is not op
+		player does not have permission "group.builder"
+		{minetoggle::%player's uuid%} is not set
+		{staffmode::%player's uuid%} is not set
+		cancel event
+
+on break:
+	{minetoggle::%player's uuid%} is not set
+	{staffmode::%player's uuid%} is not set
+	if event-block's name contains "Ancient" or "Obsidian" or "Redstone" or "Lapis" or "Diamond" or "Emerald" or "Coal" or "Gold" or "Iron" or "ancient" or "obsidian" or "redstone" or "lapis" or "diamond" or "emerald" or "stone" or "coal" or "gold" or "iron":
+		chance of 0.5%:
+			give 1 nether star named "&fSoul of &3&lBubPVP" to player
+			play sound "block.note_block.pling" at pitch 1.6 to player
+			send "&e&lLUCKY! &fYou found a soul of &3&lBubPVP &fwhile mining! Trade it to the &3Soul Seeker &ffor cool abilities!" to player
+	if event-block is stone:
+		chance of 0.25%:
+			give 1 nether star named "&fSoul of &3&lBubPVP" to player
+			play sound "block.note_block.pling" at pitch 1.6 to player
+			send "&e&lLUCKY! &fYou found a soul of &3&lBubPVP &fwhile mining! Trade it to the &3Soul Seeker &ffor cool abilities!" to player
+
+on break:
+	if getBestBooster("xp") is not 0:
+		set {_xp} to ceil(getBestBooster("xp"))
+	else:
+		set {_xp} to 1
+	if {levelmulti::%player's uuid%} is set:
+		set {_xp} to ({_xp} * {levelmulti::%player's uuid%})
+	if getBestBooster("mine") is not 0:
+		set {_amount} to ceil(getBestBooster("mine"))
+	else:
+		set {_amount} to 1
+	if {minetoggle::%player's uuid%} is set:
+		stop
+	set {_n} to a random number between 1.9 and 2
+	if event-block is stone:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player is in region "safecave" parsed as a region:
+			if player's tool is a wooden pickaxe or stone pickaxe or iron pickaxe or diamond pickaxe or netherite pickaxe:
+				if {battlepass::%player's uuid%} is 0:
+					if {bpdetect::1::%player's uuid%} is less than 50:
+						add 1 to {bpdetect::1::%player's uuid%}
+				give player {_amount} of cobblestone
+				play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+				cancel event
+				chance of 2%:
+					add {_xp} to total xp of player
+				set event-block to bedrock
+				wait 10 seconds
+				set event-block to stone
+				stop
+			else:
+				cancel event
+				send "&4ERROR: &cYou must have &8[&7I&8] &fWooden Pickaxe &cto mine this!"
+				stop
+		if player's tool is a wooden pickaxe or stone pickaxe or iron pickaxe or diamond pickaxe or netherite pickaxe:
+			if {battlepass::%player's uuid%} is 0:
+				if {bpdetect::1::%player's uuid%} is less than 50:
+					add 1 to {bpdetect::1::%player's uuid%}
+			give player {_amount} of cobblestone
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 2%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7I&8] &fWooden Pickaxe &cto mine this!"
+	if event-block is coal ore:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player is in region "safecave" parsed as a region:
+			if player's tool is a wooden pickaxe or stone pickaxe or iron pickaxe or diamond pickaxe or netherite pickaxe:
+				give player {_amount} of coal
+				play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+				cancel event
+				chance of 2%:
+					add {_xp} to total xp of player
+				set event-block to bedrock
+				wait 10 seconds
+				set event-block to coal ore
+				stop
+			else:
+				cancel event
+				send "&4ERROR: &cYou must have &8[&7I&8] &fWooden Pickaxe &cto mine this!"
+				stop
+		if player's tool is a wooden pickaxe or stone pickaxe or iron pickaxe or diamond pickaxe or netherite pickaxe:
+			give player {_amount} of coal
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 2%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7I&8] &fWooden Pickaxe &cto mine this!"
+	if event-block is coal block:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a wooden pickaxe or stone pickaxe or iron pickaxe or diamond pickaxe or netherite pickaxe:
+			give player (2 * {_amount}) of coal
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 2%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7I&8] &fWooden Pickaxe &cto mine this!"
+	if event-block is iron ore:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player is in region "safecave" parsed as a region:
+			if player's tool is a stone pickaxe or iron pickaxe or diamond pickaxe or netherite pickaxe:
+				give player {_amount} of iron ingot
+				play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+				cancel event
+				chance of 2%:
+					add {_xp} to total xp of player
+				set event-block to bedrock
+				wait 10 seconds
+				set event-block to iron ore
+				stop
+			else:
+				cancel event
+				send "&4ERROR: &cYou must have &8[&7XI&8] &fStone Pickaxe &cto mine this!"
+				stop
+		if player's tool is a stone pickaxe or iron pickaxe or diamond pickaxe or netherite pickaxe:
+			give player {_amount} of iron ingot
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 3%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XI&8] &fStone Pickaxe &cto mine this!"
+	if event-block is iron block:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a stone pickaxe or iron pickaxe or diamond pickaxe or netherite pickaxe:
+			give player (2 * {_amount}) of iron ingot
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 3%:
+				add {_xp} to total xp of player
+			if {battlepass::%player's uuid%} is 6:
+				if {bpdetect::7::%player's uuid%} is less than 100:
+					add 1 to {bpdetect::7::%player's uuid%}
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XI&8] &fStone Pickaxe &cto mine this!"
+	if event-block is lapis lazuli ore:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a stone pickaxe or iron pickaxe or diamond pickaxe or netherite pickaxe:
+			give player {_amount} of lapis lazuli
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 3%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XI&8] &fStone Pickaxe &cto mine this!"
+	if event-block is lapis lazuli block:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a stone pickaxe or iron pickaxe or diamond pickaxe or netherite pickaxe:
+			give player (2 * {_amount}) of lapis lazuli
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 3%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XI&8] &fStone Pickaxe &cto mine this!"
+	if event-block is gold ore:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a iron pickaxe or diamond pickaxe or netherite pickaxe:
+			give player {_amount} of gold ingot
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 3%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XXI&8] &fIron Pickaxe &cto mine this!"
+	if event-block is gold block:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a iron pickaxe or diamond pickaxe or netherite pickaxe:
+			give player (2 * {_amount}) of gold ingot
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 3%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XXI&8] &fIron Pickaxe &cto mine this!"
+	if event-block is redstone ore:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a iron pickaxe or diamond pickaxe or netherite pickaxe:
+			give player {_amount} of redstone dust
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 3%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XXI&8] &fIron Pickaxe &cto mine this!"
+	if event-block is redstone block:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a iron pickaxe or diamond pickaxe or netherite pickaxe:
+			give player (2 * {_amount}) of redstone dust
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 3%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XXI&8] &fIron Pickaxe &cto mine this!"
+	if event-block is emerald ore:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a diamond pickaxe or netherite pickaxe:
+			give player {_amount} of emerald
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 3%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XXXI&8] &fDiamond Pickaxe &cto mine this!"
+	if event-block is emerald block:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a diamond pickaxe or netherite pickaxe:
+			give player (2 * {_amount}) of emerald
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 3%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XXXI&8] &fDiamond Pickaxe &cto mine this!"
+	if event-block is diamond ore:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a diamond pickaxe or netherite pickaxe:
+			give player {_amount} of diamond
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 3%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XXXI&8] &fDiamond Pickaxe &cto mine this!"
+	if event-block is diamond block:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a diamond pickaxe or netherite pickaxe:
+			give player (2 * {_amount}) of diamond
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 3%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XXXI&8] &fDiamond Pickaxe &cto mine this!"
+	if event-block is obsidian:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a netherite pickaxe:
+			if {battlepass::%player's uuid%} is 22:
+				if {bpdetect::23::%player's uuid%} is less than 1000:
+					add 1 to {bpdetect::23::%player's uuid%}
+			give player {_amount} of obsidian
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 7%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XLI&8] &fNetherite Pickaxe &cto mine this!"
+	if event-block is crying obsidian:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a netherite pickaxe:
+			if {battlepass::%player's uuid%} is 22:
+				if {bpdetect::23::%player's uuid%} is less than 1000:
+					add 1 to {bpdetect::23::%player's uuid%}
+			give player (2 * {_amount}) of obsidian
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 7%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XLI&8] &fNetherite Pickaxe &cto mine this!"
+	if event-block is ancient debris:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a netherite pickaxe:
+			give player {_amount} of netherite ingot
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 5%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XLI&8] &fNetherite Pickaxe &cto mine this!"
+	if event-block is netherite block:
+		if {staffmode::%player's uuid%} is set:
+			cancel event
+			stop
+		if player's tool is a netherite pickaxe:
+			give player (2 * {_amount}) of netherite ingot
+			play sound "entity.arrow.hit_player" at pitch {_n} to player if {miningsounds::%uuid of player%} is not set
+			cancel drops
+			chance of 5%:
+				add {_xp} to total xp of player
+		else:
+			cancel event
+			send "&4ERROR: &cYou must have &8[&7XLI&8] &fNetherite Pickaxe &cto mine this!"
