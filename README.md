@@ -9,7 +9,7 @@ Skripts are how I used to code my old servers before I got into Java! I placed m
 
 ### Java
 
-I have some snippets of old (and some new) code that you can view. I added a few folders with different features I made, and put some relevant / interesting classes in them with a short description. All of the code I am showing you are just small parts of much larger projects with 50-200 classes of code.
+I have some snippets of old (and some new) code that you can view. I added a few folders with different features I made, and put some relevant / interesting classes in them with a short description. All of the code I am showing you is just small parts of much larger projects with 50-200 classes of code.
 
 Also, note! You may see some things considered "bad practice" in typical software engineering. There are a couple reasons for this:
 - Some of the code is a couple years old (I was very bad at first)
