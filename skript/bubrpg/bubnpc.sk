@@ -1,0 +1,536 @@
+on npc right click:
+	ttnpc(player, name of citizen event-number)
+
+function ttnpc(p: player, l: text):
+	loop {npc::*}:
+		if {_l} is "&e[NPC] %loop-value%":
+			replace all "&e[NPC] " with "" in {_l}
+			if {talkedto%{_l}%::%{_p}%} is not set:
+				if {ct::%{_p}%} is true:
+					stop
+				set {ct::%{_p}%} to true
+				loop {npcdialogue%{_l}%::*}:
+					if {_n} is not set:
+						set {_n} to 0
+					add 1 to {_n}
+					set {_t} to {npcdialogue%{_l}%::%{_n}%}
+					replace all "%%player%%" in {_t} with "%{_p}%"
+					send "" to {_p}
+					send "&e[NPC] %{_l}% &7» &f%colored {_t}%" to {_p}
+					send "" to {_p}
+					play sound "entity.villager.yes" at pitch {npcpitch::%{_l}%} to {_p}
+					wait 3 seconds
+				delete {ct::%{_p}%}
+				set {talkedto%{_l}%::%{_p}%} to true
+			else:
+				if {onlydialogue::%{_l}%} is set:
+					if {ct::%{_p}%} is true:
+						stop
+					set {ct::%{_p}%} to true
+					loop {npcdialogue%{_l}%::*}:
+						if {_n} is not set:
+							set {_n} to 0
+						add 1 to {_n}
+						set {_t} to {npcdialogue%{_l}%::%{_n}%}
+						replace all "%%player%%" in {_t} with "%{_p}%"
+						send "" to {_p}
+						send "&e[NPC] %{_l}% &7» &f%colored {_t}%" to {_p}
+						send "" to {_p}
+						play sound "entity.villager.yes" at pitch {npcpitch::%{_l}%} to {_p}
+						replace all "%{_p}%" in {_t} with "%%player%%"
+						wait 3 seconds
+					delete {ct::%{_p}%}
+				else:
+					citizenShop({_p}, {_l})
+			stop loop
+			
+function citizenShop(p: player, l: text):
+	if {ct::%{_p}%} is true:
+		stop
+	play sound "ui.button.click" to {_p}
+	open virtual chest inventory with size 3 named "&e%{_l}%'s Shop" to {_p}
+	format gui slot 0, 1, 2, 9, 11, 18, 19, and 20 of {_p} with white stained glass pane named "&1"
+	format gui slot 3, 4, 5, 12, 14, 21, 22, and 23 of {_p} with lime stained glass pane named "&1"
+	format gui slot 6, 7, 8, 15, 17, 24, 25, and 26 of {_p} with red stained glass pane named "&1"
+	format gui slot 10 of {_p} with {rpgitem::clickdialogue} to close:
+		set {ct::%{_p}%} to true
+		loop {npcdialogue%{_l}%::*}:
+			if {_n} is not set:
+				set {_n} to 0
+			add 1 to {_n}
+			set {_t} to {npcdialogue%{_l}%::%{_n}%}
+			replace all "%%player%%" in {_t} with "%{_p}%"
+			send "" to {_p}
+			send "&e[NPC] %{_l}% &7» &f%colored {_t}%" to {_p}
+			send "" to {_p}
+			play sound "entity.villager.yes" at pitch {npcpitch::%{_l}%} to {_p}
+			wait 3 seconds
+		delete {ct::%{_p}%}
+	format gui slot 13 of {_p} with lime concrete named "&a&lBUY" to run:
+		play sound "ui.button.click" to {_p}
+		open virtual chest inventory with size 6 named "&a&lBUY" to {_p}
+		format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with lime stained glass pane named "&1"
+		format gui slot 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, and 43 of {_p} with black stained glass pane named "&1"
+		format gui slot 53 of {_p} with barrier named "&cBack" to run:
+			citizenShop({_p}, {_l})
+		loop 28 times:
+			if {_n} is not set:
+				set {_n} to 9
+			add 1 to {_n}
+			if {_n} is 17, 26 or 35:
+				add 2 to {_n}
+			set {_n%{_n}%} to loop-number
+			if {buy::%{_l}%::%loop-number%::item} is set:
+				format gui slot {_n} of {_p} with {buy::%{_l}%::%loop-number%::shopitem} to run:
+					if {balance::%{_p}%} is greater than or equal to {buy::%{_l}%::%{_n%clicked slot%}%::price}:
+						if {_p} can hold {buy::%{_l}%::%{_n%clicked slot%}%::amount} of {buy::%{_l}%::%{_n%clicked slot%}%::item}:
+							give {_p} {buy::%{_l}%::%{_n%clicked slot%}%::amount} of {buy::%{_l}%::%{_n%clicked slot%}%::item}
+						else:
+							drop {buy::%{_l}%::%{_n%clicked slot%}%::amount} of {buy::%{_l}%::%{_n%clicked slot%}%::item} at {_p}'s location
+						play sound "block.note_block.pling" at pitch 2 to {_p}
+						collectionitemget({_p}, {buy::%{_l}%::%{_n%clicked slot%}%::item})
+						subtract {buy::%{_l}%::%{_n%clicked slot%}%::price} from {balance::%{_p}%}
+					else:
+						play sound "entity.villager.no" at pitch {npcpitch::%{_l}%} to {_p}
+						send "&cInsufficient Balance!" to {_p}
+			else:
+				format gui slot {_n} of {_p} with black stained glass pane named "&1"
+	format gui slot 16 of {_p} with red concrete named "&c&lSELL" to run:
+		play sound "ui.button.click" to {_p}
+		open virtual chest inventory with size 6 named "&c&lSELL" to {_p}
+		format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with red stained glass pane named "&1"
+		format gui slot 10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34, 37, 38, 39, 40, 41, 42, and 43 of {_p} with black stained glass pane named "&1"
+		format gui slot 53 of {_p} with barrier named "&cBack" to run:
+			citizenShop({_p}, {_l})
+		loop 28 times:
+			if {_selln} is not set:
+				set {_selln} to 9
+			add 1 to {_selln}
+			if {_selln} is 17, 26 or 35:
+				add 2 to {_selln}
+			set {_selln%{_selln}%} to loop-number
+			if {sell::%{_l}%::%loop-number%::item} is set:
+				format gui slot {_selln} of {_p} with {sell::%{_l}%::%loop-number%::shopitem} to run:
+					if {_p} has {sell::%{_l}%::%{_selln%clicked slot%}%::amount} of {sell::%{_l}%::%{_selln%clicked slot%}%::item}:
+						remove {sell::%{_l}%::%{_selln%clicked slot%}%::amount} of {sell::%{_l}%::%{_selln%clicked slot%}%::item} from player's inventory
+						play sound "block.note_block.pling" at pitch 2 to {_p}
+						collectionitemget({_p}, {sell::%{_l}%::%{_selln%clicked slot%}%::item})
+						add {sell::%{_l}%::%{_selln%clicked slot%}%::price} to {balance::%{_p}%}
+					else:
+						play sound "entity.villager.no" at pitch {npcpitch::%{_l}%} to {_p}
+						send "&cInsufficient Resources!" to {_p}
+			else:
+				format gui slot {_selln} of {_p} with black stained glass pane named "&1"
+
+command /bubnpc <text> [<string>]:
+	permission: bubcitizens.command
+	permission message: &cHey! You can't do that!
+	trigger:
+		if arg-1 is "create":
+			if arg-2 is not set:
+				send "&c&lBubRPG: &fYou have to specify the npc!"
+			else:
+				if {npc::%arg-2%} is not set:
+					set {npc::%arg-2%} to arg-2
+					set {npcpitch::%arg-2%} to 1
+					set {onlydialogue::%arg-2%} to false
+					send "&c&lBubRPG: &fYou have set %colored arg-2% &fto a Bub NPC!"
+				else:
+					send "&c&lBubRPG: &fThis is already a Bub NPC!"
+		else if arg-1 is "delete":
+			if arg-2 is set:
+				if {npc::%arg-2%} is set:
+					delete {npc::%arg-2%}
+					delete {npcpitch::%arg-2%}
+					delete {npcdialogue%arg-2%::*}
+					delete {talkedto%arg-2%::*}
+					delete {onlydialogue::%arg-2%}
+					send "&c&lBubRPG: &fYou have deleted the Bub NPC %colored arg-2%!"
+				else:
+					send "&c&lBubRPG: &fThis isn't a Bub NPC!"
+			else:
+				send "&c&lBubRPG: &fYou have to specify the npc!"
+		else if arg-1 is "list":
+			send "&c&lBubRPG &e[NPC]s &7» &f%{npc::*}%"
+		else if arg-1 is "help":
+			send ""
+			send "&c&lBub NPCS"
+			send "&8» &f/bubnpc create <npc name>"
+			send "&8» &f/bubnpc delete <npc name>"
+			send "&8» &f/bubnpc list"
+			send "&8» &f/bubnpc help"
+			send "&8» &f/bubnpc options <npc name>"
+			send ""
+		else if arg-1 is "options":
+			if arg-2 is set:
+				if {npc::%arg-2%} is set:
+					set {_a} to arg-2
+					open virtual chest inventory with size 6 named "&c&lBub NPC &fOptions" to player
+					format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of player with black stained glass pane named "&1"
+					format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of player with gray stained glass pane named "&1"
+					format gui slot 10 of player with jukebox named "&cSet Dialogue" to run:
+						send "&c&lBubRPG: &fSet the Dialogue of the NPC in chat! Use `` to separate the lines! Remember, the ''&e[NPC] Name &7» & f'' &fis already formatted for you! If your text is too long for one chat message, type %%add%% somewhere in your message to continue your dialogue in a new chat message!"
+						set {npcsetting::%player%} to "true- %{_a}%"
+					format gui slot 11 of player with jukebox named "&cReset Dialogue" to run:
+						delete {npcdialogue%{_a}%::*}
+						send "&c&lBubRPG: &fThis NPC's dialogue is now reset!"
+					format gui slot 12 of player with note block named "&cPitch" to run:
+						open virtual chest inventory with size 1 named "&cPitch Setter" to player
+						format gui slot 0, 1, and 2 of player with red stained glass pane named "&1"
+						format gui slot 6, 7, and 8 of player with lime stained glass pane named "&1"
+						format gui slot 4 of player with paper named "&4Current Pitch: %{npcpitch::%{_a}%}%"
+						format gui slot 3 of player with arrow named "&4Decrease" to run:
+							subtract 0.1 from {npcpitch::%{_a}%}
+							format gui slot 4 of player with paper named "&4Current Pitch: %{npcpitch::%{_a}%}%"
+						format gui slot 5 of player with arrow named "&aIncrease" to run:
+							add 0.1 to {npcpitch::%{_a}%}
+							format gui slot 4 of player with paper named "&4Current Pitch: %{npcpitch::%{_a}%}%"
+					if {onlydialogue::%{_a}%} is set:
+						set {_text} to "&aTRUE"
+					else:
+						set {_text} to "&cFALSE"
+					format gui slot 13 of player with paper named "&cOnly Dialogue &7- %{_text}%" to run:
+						onlydialogue({_a}, player)
+					format gui slot 14 of player with lime concrete named "&aSet &lBUY &7(Buy from npc)" to run:
+						setTheBuy(player, {_a})
+					format gui slot 15 of player with red concrete named "&cSet &lSELL &7(Sell to npc)" to run:
+						setTheSell(player, {_a})
+				else:
+					send "&c&lBubRPG: &fThis is not a Bub NPC!"
+			else:
+				send "&c&lBubRPG: &fYou have to specify the npc!"
+
+function setTheBuy(p: player, l: text):
+	open virtual chest inventory with size 6 named "&a&lSET BUY &7(For &e%{_l}%&7)" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with lime stained glass pane named "&1"
+	loop 28 times:
+		add 1 to {_v}
+		if {_n} is not set:
+			set {_n} to 9
+		add 1 to {_n}
+		if {_n} is 17, 26 or 35:
+			add 2 to {_n}
+		set {_n%{_n}%} to {_v}
+		if {buy::%{_l}%::%loop-number%::item} is set:
+			format gui slot {_n} of {_p} with {buy::%{_l}%::%loop-number%::shopitem} to run:
+				delete {buy::%{_l}%::%{_n%clicked slot%}%::item} 
+				delete {buy::%{_l}%::%{_n%clicked slot%}%::shopitem} 
+				delete {buy::%{_l}%::%{_n%clicked slot%}%::price}
+				delete {buy::%{_l}%::%{_n%clicked slot%}%::amount} 
+				delete {buy::%{_l}%::%{_n%clicked slot%}%::*}
+				format gui slot (clicked slot) of {_p} with paper named "&f&lCLICK ME &7to set shop slot %{_n%clicked slot%}%!" to run:
+					chooseItemForBuy(player, {_l}, clicked slot, 1)
+		else:
+			format gui slot {_n} of {_p} with paper named "&f&lCLICK ME &7to set shop slot %loop-number%!" to run:
+				chooseItemForBuy(player, {_l}, clicked slot, 1)
+
+function chooseItemForBuy(p: player, l: text, slot: number, nu: number):
+	open virtual chest inventory with size 6 named "&aChoose an item &7| &cPage %{_nu}%" to {_p}
+	set {_s} to ceil(size of {rpgitem::*} / 36)
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 53, 52, 51, 50, 49, 48, 47, 46, and 45 of {_p} with white stained glass pane named "&f"
+	format gui slot 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, and 44 of {_p} with black stained glass pane named "&f"
+	if {_nu} is 1:
+		format gui slot 48 of {_p} with red concrete named "&4"
+	else:
+		format gui slot 48 of {_p} with arrow named "&4Page %{_nu} - 1%" to run:				
+			chooseItemForBuy({_p}, {_l}, {_slot}, {_nu} - 1)
+	if {_s} is {_nu} or 0:
+		format gui slot 50 of {_p} with red concrete named "&4"
+	else:
+		format gui slot 50 of {_p} with arrow named "&4Page %{_nu} + 1%" to run:
+			chooseItemForBuy({_p}, {_l}, {_slot}, {_nu} + 1)
+	set {_v} to ({_nu} - 1) * 36
+	loop {rpgitem::*}:
+		if {_o} is not set:
+			set {_o} to 0
+		add 1 to {_o}
+		if {_v} < {_o}:
+			if {_o} < (({_nu} * 36) + 1):
+				set {_c} to {_o} - {_v}
+				set {_%{_c}%} to {rpgitem::%loop-index%}
+				format gui slot ({_o} - {_v}) + 8 of {_p} with {rpgitem::%loop-index%} to run:
+					set {_sn} to (index of event-slot - 8)
+					setAmountForBuy({_p}, {_slot}, {_%{_sn}%}, {_l})
+
+function setAmountForBuy(p: player, s: number, i: item, l: text):
+	set {amount::%{_p}%} to 1
+	open virtual chest inventory with size 1 named "&aChoose the amount!" to {_p}
+	format gui slot 0, 1, 3, 5, 7, and 8 of {_p} with black stained glass pane named "&1"
+	format gui slot 4 of {_p} with paper named "&f&lAMOUNT &7» &e%{amount::%{_p}%}%"
+	format gui slot 3 of {_p} with arrow named "&fDecrease Amount &c-1" to run:
+		if {amount::%{_p}%} is greater than 1:
+			subtract 1 from {amount::%{_p}%}
+			format gui slot 4 of {_p} with paper named "&f&lAMOUNT &7» &e%{amount::%{_p}%}%"
+	format gui slot 2 of {_p} with arrow named "&fDecrease Amount &c-10" to run:
+		if {amount::%{_p}%} is greater than 10:
+			subtract 10 from {amount::%{_p}%}
+			format gui slot 4 of {_p} with paper named "&f&lAMOUNT &7» &e%{amount::%{_p}%}%"
+	format gui slot 1 of {_p} with arrow named "&fDecrease Amount &c-100" to run:
+		if {amount::%{_p}%} is greater than 100:
+			subtract 100 from {amount::%{_p}%}
+			format gui slot 4 of {_p} with paper named "&f&lAMOUNT &7» &e%{amount::%{_p}%}%"
+	format gui slot 5 of {_p} with arrow named "&fIncrease Amount &a+1" to run:
+		add 1 to {amount::%{_p}%}
+		format gui slot 4 of {_p} with paper named "&f&lAMOUNT &7» &e%{amount::%{_p}%}%"
+	format gui slot 6 of {_p} with arrow named "&fIncrease Amount &a+10" to run:
+		add 10 to {amount::%{_p}%}
+		format gui slot 4 of {_p} with paper named "&f&lAMOUNT &7» &e%{amount::%{_p}%}%"
+	format gui slot 7 of {_p} with arrow named "&fIncrease Amount &a+100" to run:
+		add 100 to {amount::%{_p}%}
+		format gui slot 4 of {_p} with paper named "&f&lAMOUNT &7» &e%{amount::%{_p}%}%"
+	format gui slot 8 of {_p} with lime concrete named "&a&lCONFIRM" to run:
+		setPriceForBuy({_p}, {_s}, {_i}, {_l}, {amount::%{_p}%})
+
+on inventory close:
+	if name of event-inventory is "&aChoose the amount!":
+		wait 1 tick
+		if name of player's current inventory is "&aChoose the price!":
+			stop
+		else if name of player's current inventory is "&aChoose the profit gained!":
+			stop
+		else:
+			delete {amount::%player%}
+			send "&c&lBubRPG: &fYou canceled setting the shop!"
+	else if name of event-inventory is "&aChoose the price!":
+		wait 1 tick
+		if name of player's current inventory contains "SET BUY":
+			stop
+		else:
+			delete {price::%player%}
+			send "&c&lBubRPG: &fYou canceled setting the shop!"
+	else if name of event-inventory is "&aChoose the profit gained!":
+		wait 1 tick
+		if name of player's current inventory contains "SET SELL":
+			stop
+		else:
+			delete {price::%player%}
+			send "&c&lBubRPG: &fYou canceled setting the shop!"
+
+function setPriceForBuy(p: player, s: number, i: item, l: text, a: number):
+	delete {amount::%{_p}%}
+	set {price::%{_p}%} to 1
+	open virtual chest inventory with size 1 named "&aChoose the price!" to {_p}
+	format gui slot 0, 1, 3, 5, 7, and 8 of {_p} with black stained glass pane named "&1"
+	format gui slot 4 of {_p} with emerald named "&f&lPRICE &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 3 of {_p} with arrow named "&fDecrease Price &c-1" to run:
+		if {price::%{_p}%} is greater than 1:
+			subtract 1 from {price::%{_p}%}
+			format gui slot 4 of {_p} with emerald named "&f&lPRICE &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 2 of {_p} with arrow named "&fDecrease Price &c-10" to run:
+		if {price::%{_p}%} is greater than 10:
+			subtract 10 from {price::%{_p}%}
+			format gui slot 4 of {_p} with emerald named "&f&lPRICE &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 1 of {_p} with arrow named "&fDecrease Price &c-100" to run:
+		if {price::%{_p}%} is greater than 100:
+			subtract 100 from {price::%{_p}%}
+			format gui slot 4 of {_p} with emerald named "&f&lPRICE &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 5 of {_p} with arrow named "&fIncrease Price &a+1" to run:
+		add 1 to {price::%{_p}%}
+		format gui slot 4 of {_p} with emerald named "&f&lPRICE &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 6 of {_p} with arrow named "&fIncrease Price &a+10" to run:
+		add 10 to {price::%{_p}%}
+		format gui slot 4 of {_p} with emerald named "&f&lPRICE &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 7 of {_p} with arrow named "&fIncrease Price &a+100" to run:
+		add 100 to {price::%{_p}%}
+		format gui slot 4 of {_p} with emerald named "&f&lPRICE &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 8 of {_p} with lime concrete named "&a&lCONFIRM" to run:
+		setBuy({_p}, {_s}, {_i}, {_l}, {_a}, {price::%{_p}%})
+
+function setBuy(p: player, s: number, i: item, l: text, a: number, pr: number):
+	delete {price::%{_p}%}
+	set {_sn} to {_s}
+	if {_sn} is 10 or 11 or 12 or 13 or 14 or 15 or 16:
+		subtract 9 from {_sn}
+	else if {_sn} is 19 or 20 or 21 or 22 or 23 or 24 or 25:
+		subtract 11 from {_sn}
+	else if {_sn} is 28 or 29 or 30 or 31 or 32 or 33 or 34:
+		subtract 13 from {_sn}
+	else if {_sn} is 37 or 38 or 39 or 40 or 41 or 42 or 43:
+		subtract 15 from {_sn}
+	set {buy::%{_l}%::%{_sn}%::item} to {_i}
+	set {_c} to {_i}
+	set {_line} to 0
+	while {_n} is not set:
+		if line ({_line} + 1) of {_c}'s lore is set:
+			add 1 to {_line}
+		else:
+			set {_n} to "URMOM"
+	set line ({_line} + 1) of {_c}'s lore to "&7"
+	set line ({_line} + 2) of {_c}'s lore to "&f&lAMOUNT: &ex%{_a}%"
+	set line ({_line} + 3) of {_c}'s lore to "&f&lPRICE: &a⛃%{_pr}%"
+	set {buy::%{_l}%::%{_sn}%::shopitem} to {_c}
+	set {buy::%{_l}%::%{_sn}%::price} to {_pr}
+	set {buy::%{_l}%::%{_sn}%::amount} to {_a}
+	setTheBuy({_p}, {_l})
+
+function setTheSell(p: player, l: text):
+	open virtual chest inventory with size 6 named "&c&lSET SELL &7(For &e%{_l}%&7)" to {_p}
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 17, 18, 26, 27, 35, 36, 44, 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with red stained glass pane named "&1"
+	loop 28 times:
+		add 1 to {_v}
+		if {_n} is not set:
+			set {_n} to 9
+		add 1 to {_n}
+		if {_n} is 17, 26 or 35:
+			add 2 to {_n}
+		set {_n%{_n}%} to {_v}
+		if {sell::%{_l}%::%loop-number%::item} is set:
+			format gui slot {_n} of {_p} with {sell::%{_l}%::%loop-number%::shopitem} to run:
+				delete {sell::%{_l}%::%{_n%clicked slot%}%::item} 
+				delete {sell::%{_l}%::%{_n%clicked slot%}%::shopitem} 
+				delete {sell::%{_l}%::%{_n%clicked slot%}%::price}
+				delete {sell::%{_l}%::%{_n%clicked slot%}%::amount} 
+				delete {sell::%{_l}%::%{_n%clicked slot%}%::*}
+				format gui slot (clicked slot) of {_p} with paper named "&f&lCLICK ME &7to set shop slot %{_n%clicked slot%}%!" to run:
+					chooseItemForSell(player, {_l}, clicked slot, 1)
+		else:
+			format gui slot {_n} of {_p} with paper named "&f&lCLICK ME &7to set shop slot %loop-number%!" to run:
+				chooseItemForSell(player, {_l}, clicked slot, 1)
+
+function chooseItemForSell(p: player, l: text, slot: number, nu: number):
+	open virtual chest inventory with size 6 named "&aChoose an item &7| &cPage %{_nu}%" to {_p}
+	set {_s} to ceil(size of {rpgitem::*} / 36)
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 53, 52, 51, 50, 49, 48, 47, 46, and 45 of {_p} with white stained glass pane named "&f"
+	format gui slot 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, and 44 of {_p} with black stained glass pane named "&f"
+	if {_nu} is 1:
+		format gui slot 48 of {_p} with red concrete named "&4"
+	else:
+		format gui slot 48 of {_p} with arrow named "&4Page %{_nu} - 1%" to run:				
+			chooseItemForSell({_p}, {_l}, {_slot}, {_nu} - 1)
+	if {_s} is {_nu} or 0:
+		format gui slot 50 of {_p} with red concrete named "&4"
+	else:
+		format gui slot 50 of {_p} with arrow named "&4Page %{_nu} + 1%" to run:
+			chooseItemForSell({_p}, {_l}, {_slot}, {_nu} + 1)
+	set {_v} to ({_nu} - 1) * 36
+	loop {rpgitem::*}:
+		if {_o} is not set:
+			set {_o} to 0
+		add 1 to {_o}
+		if {_v} < {_o}:
+			if {_o} < (({_nu} * 36) + 1):
+				set {_c} to {_o} - {_v}
+				set {_%{_c}%} to {rpgitem::%loop-index%}
+				format gui slot ({_o} - {_v}) + 8 of {_p} with {rpgitem::%loop-index%} to run:
+					set {_sn} to (index of event-slot - 8)
+					setAmountForSell({_p}, {_slot}, {_%{_sn}%}, {_l})
+
+function setAmountForSell(p: player, s: number, i: item, l: text):
+	set {amount::%{_p}%} to 1
+	open virtual chest inventory with size 1 named "&aChoose the amount!" to {_p}
+	format gui slot 0, 1, 3, 5, 7, and 8 of {_p} with black stained glass pane named "&1"
+	format gui slot 4 of {_p} with paper named "&f&lAMOUNT NEEDED &7» &e%{amount::%{_p}%}%"
+	format gui slot 3 of {_p} with arrow named "&fDecrease Amount &c-1" to run:
+		if {amount::%{_p}%} is greater than 1:
+			subtract 1 from {amount::%{_p}%}
+			format gui slot 4 of {_p} with paper named "&f&lAMOUNT NEEDED &7» &e%{amount::%{_p}%}%"
+	format gui slot 2 of {_p} with arrow named "&fDecrease Amount &c-10" to run:
+		if {amount::%{_p}%} is greater than 10:
+			subtract 10 from {amount::%{_p}%}
+			format gui slot 4 of {_p} with paper named "&f&lAMOUNT NEEDED &7» &e%{amount::%{_p}%}%"
+	format gui slot 1 of {_p} with arrow named "&fDecrease Amount &c-100" to run:
+		if {amount::%{_p}%} is greater than 100:
+			subtract 100 from {amount::%{_p}%}
+			format gui slot 4 of {_p} with paper named "&f&lAMOUNT NEEDED &7» &e%{amount::%{_p}%}%"
+	format gui slot 5 of {_p} with arrow named "&fIncrease Amount &a+1" to run:
+		add 1 to {amount::%{_p}%}
+		format gui slot 4 of {_p} with paper named "&f&lAMOUNT NEEDED &7» &e%{amount::%{_p}%}%"
+	format gui slot 6 of {_p} with arrow named "&fIncrease Amount &a+10" to run:
+		add 10 to {amount::%{_p}%}
+		format gui slot 4 of {_p} with paper named "&f&lAMOUNT NEEDED &7» &e%{amount::%{_p}%}%"
+	format gui slot 7 of {_p} with arrow named "&fIncrease Amount &a+100" to run:
+		add 100 to {amount::%{_p}%}
+		format gui slot 4 of {_p} with paper named "&f&lAMOUNT NEEDED &7» &e%{amount::%{_p}%}%"
+	format gui slot 8 of {_p} with lime concrete named "&a&lCONFIRM" to run:
+		setPriceForSell({_p}, {_s}, {_i}, {_l}, {amount::%{_p}%})
+
+function setPriceForSell(p: player, s: number, i: item, l: text, a: number):
+	delete {amount::%{_p}%}
+	set {price::%{_p}%} to 1
+	open virtual chest inventory with size 1 named "&aChoose the profit gained!" to {_p}
+	format gui slot 0, 1, 3, 5, 7, and 8 of {_p} with black stained glass pane named "&1"
+	format gui slot 4 of {_p} with emerald named "&f&lPROFIT GAINED &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 3 of {_p} with arrow named "&fDecrease Price &c-1" to run:
+		if {price::%{_p}%} is greater than 1:
+			subtract 1 from {price::%{_p}%}
+			format gui slot 4 of {_p} with emerald named "&f&lPROFIT GAINED &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 2 of {_p} with arrow named "&fDecrease Price &c-10" to run:
+		if {price::%{_p}%} is greater than 10:
+			subtract 10 from {price::%{_p}%}
+			format gui slot 4 of {_p} with emerald named "&f&lPROFIT GAINED &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 1 of {_p} with arrow named "&fDecrease Price &c-100" to run:
+		if {price::%{_p}%} is greater than 100:
+			subtract 100 from {price::%{_p}%}
+			format gui slot 4 of {_p} with emerald named "&f&lPROFIT GAINED &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 5 of {_p} with arrow named "&fIncrease Price &a+1" to run:
+		add 1 to {price::%{_p}%}
+		format gui slot 4 of {_p} with emerald named "&f&lPROFIT GAINED &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 6 of {_p} with arrow named "&fIncrease Price &a+10" to run:
+		add 10 to {price::%{_p}%}
+		format gui slot 4 of {_p} with emerald named "&f&lPROFIT GAINED &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 7 of {_p} with arrow named "&fIncrease Price &a+100" to run:
+		add 100 to {price::%{_p}%}
+		format gui slot 4 of {_p} with emerald named "&f&lPROFIT GAINED &7» &a⛃%{price::%{_p}%}%"
+	format gui slot 8 of {_p} with lime concrete named "&a&lCONFIRM" to run:
+		setSell({_p}, {_s}, {_i}, {_l}, {_a}, {price::%{_p}%})
+
+function setSell(p: player, s: number, i: item, l: text, a: number, pr: number):
+	delete {price::%{_p}%}
+	set {_sn} to {_s}
+	if {_sn} is 10 or 11 or 12 or 13 or 14 or 15 or 16:
+		subtract 9 from {_sn}
+	else if {_sn} is 19 or 20 or 21 or 22 or 23 or 24 or 25:
+		subtract 11 from {_sn}
+	else if {_sn} is 28 or 29 or 30 or 31 or 32 or 33 or 34:
+		subtract 13 from {_sn}
+	else if {_sn} is 37 or 38 or 39 or 40 or 41 or 42 or 43:
+		subtract 15 from {_sn}
+	set {sell::%{_l}%::%{_sn}%::item} to {_i}
+	set {_c} to {_i}
+	set {_line} to 0
+	while {_n} is not set:
+		if line ({_line} + 1) of {_c}'s lore is set:
+			add 1 to {_line}
+		else:
+			set {_n} to "URMOM"
+	set line ({_line} + 1) of {_c}'s lore to "&7"
+	set line ({_line} + 2) of {_c}'s lore to "&f&lAMOUNT NEEDED: &ex%{_a}%"
+	set line ({_line} + 3) of {_c}'s lore to "&f&lPROFIT: &a⛃%{_pr}%"
+	set {sell::%{_l}%::%{_sn}%::shopitem} to {_c}
+	set {sell::%{_l}%::%{_sn}%::price} to {_pr}
+	set {sell::%{_l}%::%{_sn}%::amount} to {_a}
+	setTheSell({_p}, {_l})
+
+function onlydialogue(b: string, p: player):
+	if {onlydialogue::%{_b}%} is not set:
+		set {onlydialogue::%{_b}%} to true
+		format gui slot 13 of {_p} with paper named "&cOnly Dialogue &7- &aTRUE" to run:
+			onlydialogue({_b}, {_p})
+	else:
+		delete {onlydialogue::%{_b}%}
+		format gui slot 13 of {_p} with paper named "&cOnly Dialogue &7- &cFALSE" to run:
+			onlydialogue({_b}, {_p})
+
+on chat:
+	if {npcsetting::%player%} contains "true- ":
+		cancel event
+		if message contains "%%add%%":
+			replace all "%%add%%" in message with ""
+			set {_nl} to true
+		if {nu::%player%} is not set:
+			set {nu::%player%} to 0
+		add 1 to {nu::%player%}
+		if {nu::%player%} is 1:
+			set {%player%diagoluesettingvariable::%{nu::%player%}%} to message
+		else:
+			set {_rm} to {nu::%player%} - 1
+			set {%player%diagoluesettingvariable::%{nu::%player%}%} to "%{%player%diagoluesettingvariable::%{_rm}%}%``%message%"
+		if {_nl} is true:
+			send "&c&lBubRPG: &fYou requested to send more dialogue! You do not need to separate the last line of your last message with the first line of this message with ``! That is already done for you!"
+			stop
+		else:
+			replace all "true- " in {npcsetting::%player%} with ""
+			set {npcdialogue%{npcsetting::%player%}%::*} to {%player%diagoluesettingvariable::%{nu::%player%}%} split by "``"
+			delete {nu::%player%}
+			delete {%player%diagoluesettingvariable::*}
+			send "&c&lBubRPG: &fThe dialogue has been set!"
