@@ -1,0 +1,348 @@
+on right click on crafting table:
+	cancel event
+	play sound "entity.chicken.egg" to player
+	open virtual chest inventory with size 6 named "&f&lCRAFTING TABLE" to player
+	format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 13, 14, 15, 16, 17, 18, 22, 23, 25, 26, 27, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, and 44 of player with light gray stained glass pane named "&7"
+	format gui slot 45, 46, 47, 48, 49, 50, 51, 52, and 53 of player with red stained glass pane named "&7"
+	format gui slot 24 of player with black stained glass pane named "&1"
+
+on inventory click:
+	if name of event-inventory is "&f&lCRAFTING TABLE":
+		if click type is left mouse button:
+			if clicked slot is 24:
+				if player's current inventory = event-inventory:
+					getitem(player, event-item)
+				else:
+					craft(player, event-item)
+			else:
+				craft(player, event-item)
+		if click type is right mouse button:
+			if clicked slot is 24:
+				if player's current inventory = event-inventory:
+					getitem(player, event-item)
+				else:
+					craft(player, event-item)
+			else:
+				craft(player, event-item)
+		else if click type is left mouse button with shift:
+			if clicked slot is 24:
+				if player's current inventory = event-inventory:
+					getmanyitems(player, event-item)
+				else:
+					craft(player, event-item)
+			else:
+				craft(player, event-item)
+		else if click type is right mouse button with shift:
+			if clicked slot is 24:
+				if player's current inventory = event-inventory:
+					getmanyitems(player, event-item)
+				else:
+					craft(player, event-item)
+			else:
+				craft(player, event-item)
+		else:
+			stop
+
+on inventory drag:
+	if name of event-inventory is "&f&lCRAFTING TABLE":
+		craft(player, event-item)
+
+on inventory close:
+	if name of event-inventory is "&f&lCRAFTING TABLE":
+		loop 9 times:
+			if loop-number is 1:
+				set {_n} to 9
+			else if loop-number is 4:
+				set {_n} to 15
+			else if loop-number is 7:
+				set {_n} to 21
+			set {_s::%loop-number%} to slot (loop-number + {_n}) of event-inventory
+			if {_s::%loop-number%} is not air:
+				set {_ia::%loop-number%} to item amount of {_s::%loop-number%}
+				if player can hold {_ia::%loop-number%} of {_s::%loop-number%}:
+					give player {_ia::%loop-number%} of {_s::%loop-number%}
+				else:
+					drop {_ia::%loop-number%} of {_s::%loop-number%} at player's location
+
+function craft(p: player, i: item):
+	set {_u} to uuid of {_p}
+	wait 1 tick
+	if {_p} has permission "craft":
+		set {_na} to "recipelist"
+	else:
+		set {_na} to "claimedrecipes::%{_u}%"
+	loop {%{_na}%::*}:
+		set {_l} to loop-index
+		set {_h} to 0
+		loop 9 times:
+			if loop-number is 1:
+				set {_n} to 9
+			else if loop-number is 4:
+				set {_n} to 15
+			else if loop-number is 7:
+				set {_n} to 21
+			if slot (loop-number + {_n}) of {_p}'s current inventory is {recipe::%{_l}%::slot%loop-number%}:
+				if item amount of {recipe::%{_l}%::slot%loop-number%} is less than or equal to item amount of slot (loop-number + {_n}) of {_p}'s current inventory:
+					add 1 to {_h}
+				else:
+					if {recipe::%{_l}%::slot%loop-number%} is air:
+						add 1 to {_h}
+		if {_h} is 9:		
+			format gui slot 24 of {_p} with {recipe::%{_l}%::result}
+			format gui slot 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with lime stained glass pane named "&1"
+			stop
+		else:
+			format gui slot 24 of {_p} with black stained glass pane named "&1"
+			format gui slot 45, 46, 47, 48, 49, 50, 51, 52, and 53 of {_p} with red stained glass pane named "&1"
+		
+function getitem(p: player, i: item):
+	set {_u} to uuid of {_p}
+	if {_i} is black stained glass pane named "&1":
+		stop
+	if {_p} has permission "craft":
+		set {_na} to "recipelist"
+	else:
+		set {_na} to "claimedrecipes::%{_u}%"
+	loop {%{_na}%::*}:
+		set {_l} to loop-index
+		if {_i} is {recipe::%{_l}%::result}:
+			loop 9 times:
+				if loop-number is 1:
+					set {_n} to 9
+				else if loop-number is 4:
+					set {_n} to 15
+				else if loop-number is 7:
+					set {_n} to 21
+				if slot (loop-number + {_n}) of {_p}'s current inventory is {recipe::%{_l}%::slot%loop-number%}:
+					if item amount of {recipe::%{_l}%::slot%loop-number%} is less than or equal to item amount of slot (loop-number + {_n}) of {_p}'s current inventory:
+						add 1 to {_h}
+					else:
+						if {recipe::%{_l}%::slot%loop-number%} is air:
+							add 1 to {_h}
+			if {_h} is 9:		
+				collectionitemget({_p}, {_i})
+				set {_ia} to item amount of {recipe::%{_l}%::result}
+				if cursor item of {_p} is air:
+					set cursor item of {_p} to {_ia} of {recipe::%{_l}%::result}
+				else:
+					if {_p}'s current cursor is {_i}:
+						set {_v} to item amount of {_p}'s cursor
+						set {_q} to {_v} + {_ia}
+						if {_q} is greater than or equal to 64:
+							stop
+						set cursor item of {_p} to {_q} of {recipe::%{_l}%::result}
+					else:
+						stop
+				loop 9 times:
+					if loop-number is 1:
+						set {_n} to 9
+					else if loop-number is 4:
+						set {_n} to 15
+					else if loop-number is 7:
+						set {_n} to 21
+					set {_s::%loop-number%} to item amount of {recipe::%{_l}%::slot%loop-number%}
+					if {recipe::%{_l}%::slot%loop-number%} is not air:
+						remove {_s::%loop-number%} of {recipe::%{_l}%::slot%loop-number%} from slot ({_n} + loop-number) of {_p}'s current inventory
+				craft({_p}, {_i})
+				stop
+
+function getmanyitems(p: player, i: item):
+	set {_u} to uuid of {_p}
+	if {_i} is black stained glass pane named "&1":
+		stop
+	if {_p} has permission "craft":
+		set {_na} to "recipelist"
+	else:
+		set {_na} to "claimedrecipes::%{_u}%"
+	loop {%{_na}%::*}:
+		set {_l} to loop-index
+		if {_i} is {recipe::%{_l}%::result}:
+			loop 9 times:
+				if loop-number is 1:
+					set {_n} to 9
+				else if loop-number is 4:
+					set {_n} to 15
+				else if loop-number is 7:
+					set {_n} to 21
+				if slot (loop-number + {_n}) of {_p}'s current inventory is {recipe::%{_l}%::slot%loop-number%}:
+					if item amount of {recipe::%{_l}%::slot%loop-number%} is less than or equal to item amount of slot (loop-number + {_n}) of {_p}'s current inventory:
+						add 1 to {_h}
+					else:
+						if {recipe::%{_l}%::slot%loop-number%} is air:
+							add 1 to {_h}
+			if {_h} is 9:		
+				set {_itemamount} to item amount of {recipe::%{_l}%::result}
+				loop 9 times:
+					if loop-number is 1:
+						set {_n} to 9
+					else if loop-number is 4:
+						set {_n} to 15
+					else if loop-number is 7:
+						set {_n} to 21
+					set {_s::%loop-number%} to slot (loop-number + {_n}) of {_p}'s current inventory
+					if {_s::%loop-number%} is not air:
+						set {_ia::%loop-number%} to floor(item amount of {_s::%loop-number%} / item amount of {recipe::%{_l}%::slot%loop-number%})
+				set {_g} to min({_ia::*})
+				set {_b} to {_g} * {_itemamount}
+				if {_p} cannot hold {_b} of {_i}:
+					if {_p} cannot hold {_itemamount} of {_i}:
+						stop
+						stop loop
+					else:
+						while {_p} cannot hold {_b} of {_i}:
+							set {_g} to ({_g} - 1)
+							set {_b} to {_g} * {_itemamount}
+				loop 9 times:
+					if loop-number is 1:
+						set {_n} to 9
+					else if loop-number is 4:
+						set {_n} to 15
+					else if loop-number is 7:
+						set {_n} to 21
+					set {_y::%loop-number%} to {_g} * item amount of {recipe::%{_l}%::slot%loop-number%}
+					if {recipe::%{_l}%::slot%loop-number%} is not air:
+						remove {_y::%loop-number%} of {recipe::%{_l}%::slot%loop-number%} from slot ({_n} + loop-number) of {_p}'s current inventory
+				collectionitemget({_p}, {_i})
+				give {_p} {_b} of {_i}
+				craft({_p}, {_i})
+				stop
+
+command /setrecipe <text>:
+	permission: setrecipe.command
+	permission message: &cHey! You can't do that!
+	trigger:
+		if {recipe::%arg-1%::*} is not set:
+			set {_n} to arg-1
+		else:
+			send "&4ERROR: &cThere is already a recipe with this name!"
+			stop
+		set {_r} to slot 9 of player's inventory
+		if {_r} is air:
+			send "&4ERROR: &cYour crafting result cannot be air!"
+			stop
+		else:
+			loop 9 times:
+				set {recipe::%{_n}%::slot%loop-number%} to slot (loop-number - 1) of player's inventory
+			set {recipelist::%{_n}%} to "&e%{_n}%&f"
+			set {recipe::%{_n}%::result} to {_r}
+			send "&c&lBubRPG: &fThe recipe &e%{_n}% &fis now set!"
+		
+
+command /deleterecipe <text>:
+	permission: deleterecipe.command
+	permission message: &cHey! You can't do that!
+	trigger:
+		if {recipe::%arg-1%::*} is set:
+			set {_k} to arg-1
+			delete {recipe::%arg-1%::*}
+			delete {recipelist::%arg-1%}
+			loop indices of {claimedrecipes::*}:
+				delete {claimedrecipes::%loop-value%::%{_k}%}
+			send "&c&lBubRPG: &fThe recipe for &e%arg-1% &fhas been deleted!"
+		else:
+			send "&4ERROR: &cThis recipe isn't set!"
+
+command /listrecipes:
+	permission: listrecipes.command
+	permission message: &cHey! You can't do that
+	trigger:
+		send "%{recipelist::*}%" to player
+
+command /seerecipe <text>:
+	permission: seerecipe.command
+	permission message: &cHey! You can't do that!
+	trigger:
+		set {_r} to arg-1
+		if {recipe::%{_r}%::*} is set:
+			open virtual chest inventory with size 6 named "&f&lRECIPE &7» &e%arg-1%" to player
+			format gui slot 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 13, 14, 15, 16, 17, 18, 22, 23, 25, 26, 27, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, and 44 of player with light gray stained glass pane named "&7"
+			format gui slot 45, 46, 47, 48, 49, 50, 51, 52, and 53 of player with white stained glass pane named "&7"
+			loop 9 times:
+				if loop-number is 1:
+					set {_n} to 9
+				else if loop-number is 4:
+					set {_n} to 15
+				else if loop-number is 7:
+					set {_n} to 21
+				format gui slot (loop-number + {_n}) of player with {recipe::%{_r}%::slot%loop-number%}
+			format gui slot 24 of player with {recipe::%{_r}%::result}
+		else:
+			send "&c&lBubRPG: &fThis recipe isn't set!"
+
+command /recipebook <text> [<text>] [<string>]:
+	permission: recipebook.command
+	permission message: &cHey! You can't do that!
+	trigger:
+		if arg-1 is "create":
+			if arg-3 is set:
+				if arg-2 is set:
+					if player's held item is a book:
+						set {_list::*} to arg-2 split by ","
+						loop {recipelist::*}:
+							if {_list::*} contains loop-index:
+								add 1 to {_n}
+						if size of {_list::*} = {_n}:
+							set {recipebook::%arg-3%} to player's held item
+							loop {_list::*}:
+								set {recipebook::%arg-3%::%loop-value%} to true
+							send "&c&lBubRPG: &fRecipe Book Successfully Set!"
+						else:
+							send "&c&lBubRPG: &fOne or more of the recipes you listed are invalid!"
+					else:
+						send "&c&lBubRPG: &fYou must be holding a book!"
+				else:
+					send "&c&lBubRPG: &fYou must list 1 or more recipes that this book unlocks!"
+			else:
+				send "&c&lBubRPG: &fYou must give this recipe book a name!"
+		else if arg-1 is "delete":
+			if arg-2 is set:
+				if {recipebook::%arg-2%} is set:
+					delete {recipebook::%arg-2%}
+					delete {recipebook::%arg-2%::*}
+					send "&c&lBubRPG: &fRecipe successfully deleted"
+				else:
+					send "&c&lBubRPG: &fThis recipe isn't set!"
+			else:
+				send "&c&lBubRPG: &fYou must choose which recipe you want to delete!"
+		else if arg-1 is "get":
+			if arg-2 is set:
+				if {recipebook::%arg-2%} is set:
+					give player 1 of {recipebook::%arg-2%}
+					send "&c&lBubRPG: &fYou have recieved a recipe book!"
+				else:
+					send "&c&lBubRPG: &fThis recipe isn't set!"
+			else:
+				send "&c&lBubRPG: &fYou must choose which recipe book you want to recieve!"
+		else if arg-1 is "list":
+			set {_l} to "&c&lLIST&f"
+			loop {recipebook::*}:
+				set {_l} to "%{_l}%, %loop-index%"
+			send "%{_l}%" to player
+		else:
+			send "&c&lBubRPG: &fInvalid argument"
+
+on right click holding a book:
+	loop {recipebook::*}:
+		if player's held item is {recipebook::%loop-index%}:
+			loop {recipebook::%loop-index%::*}:
+				set {claimedrecipes::%player's uuid%::%loop-index-2%} to true
+			remove 1 of event-item from player's inventory
+			send title "&cRECIPE CLAIMED!" with subtitle "&7Check your Recipe Book!" to player
+			play sound "entity.arrow.hit_player" at pitch 1.5 to player
+			wait 1 second
+			play sound "item.book.page_turn" to player
+			stop loop
+
+on place of crafting table:
+	set {_l} to location of event-block offset by vector(0, 1.5, 0)
+	set {_a} to 1
+	while {craftingtable::%{_a}%} is set:
+		add 1 to {_a}
+	set {craftingtable::%{_a}%} to location of event-block
+	create holo object "&bCrafting Table;&7&o(Right Click)" with id "craftingtable%{_a}%" at {_l}
+
+on break of crafting table:
+	loop {craftingtable::*}:
+		if {craftingtable::%loop-index%} is event-location:
+			delete {craftingtable::%loop-index%}
+			delete holo object "craftingtable%loop-index%"
