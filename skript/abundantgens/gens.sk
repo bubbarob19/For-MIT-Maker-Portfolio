@@ -18,7 +18,7 @@ options:
 #MONGODB
 
 on load:
-	set {server} to mongo server with connection string "mongodb+srv://bubbarob19:WFa9Sn3lO6UFtgTW@gens.seqwl.mongodb.net/gens?retryWrites=true&w=majority"
+	set {server} to mongo server with connection string "REMOVED THIS"
 	set {database} to mongo database named "gens" of {server}
 	set {gen-collection} to mongo collection named "gens" of {database}
 	set {hopper-collection} to mongo collection named "hoppers" of {database}
